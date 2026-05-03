@@ -64,7 +64,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_PORT }}
           script: |
-            sudo fuser -k -n tcp 8080 || true
-            sudo nohup java -jar main.jar > ./output.log 2>&1 &
+            fuser -k -n tcp 8080 || true
+            nohup java -jar main.jar > ./output.log 2>&1 &
             mv output.log output_$(date +%Y%m%d-%H%M%S).log
           debug: true
