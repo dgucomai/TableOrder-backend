@@ -65,6 +65,6 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           script: |
             fuser -k -n tcp 8080 || true
-            nohup java -jar main.jar > ./output.log 2>&1 &
+            nohup java -jar main.jar --spring.datasource.url=${{ secrets.DB_URL }} --spring.datasource.username=${{ secrets.DB_USERNAME }} --spring.datasource.password=${{ secrets.DB_PASSWORD }} --spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver > ./output.log 2>&1 &
             mv output.log output_$(date +%Y%m%d-%H%M%S).log
           debug: true
