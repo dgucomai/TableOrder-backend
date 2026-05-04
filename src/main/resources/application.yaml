@@ -1,3 +1,19 @@
 spring:
-  application:
-    name: tableorder
+  datasource:
+    # 메모리 내 임시 DB(H2)를 사용하겠다는 설정입니다. 따로 설치 안 해도 돼서 연습용으로 딱이에요!
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create # 서버가 켜질 때마다 테이블을 새로 만들어줍니다.
+    show-sql: true     # 실행되는 SQL문을 로그에 보여줍니다.
+    properties:
+      hibernate:
+        format_sql: true
+
+  h2:
+    console:
+      enabled: true    # 웹에서 DB를 확인할 수 있는 콘솔을 켭니다.
