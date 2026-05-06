@@ -14,19 +14,16 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    // 1. 대기 중인 주문 조회
     @GetMapping
     public List<Order> getAllOrders() {
         return orderService.findAllOrders();
     }
 
-    // 2. 주문 승인
     @PatchMapping("/{orderId}/approve")
     public Order approveOrder(@PathVariable Long orderId) {
         return orderService.approveOrder(orderId);
     }
 
-    // 3. 주문 거절
     @PatchMapping("/{orderId}/reject")
     public Order rejectOrder(@PathVariable Long orderId) {
         return orderService.rejectOrder(orderId);
