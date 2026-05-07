@@ -1,3 +1,18 @@
 spring:
   application:
     name: tableorder
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://secuho.life:33306/cai?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: computerai
+    password: zjadpWkdWkd!!
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
