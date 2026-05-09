@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/staff/orders")
+@RequestMapping("/api/staff")
 @RequiredArgsConstructor
 public class OrderController {
 
@@ -20,12 +20,14 @@ public class OrderController {
     }
 
     @PatchMapping("/{orderId}/approve")
-    public Order approveOrder(@PathVariable Long orderId) {
-        return orderService.approveOrder(orderId);
+    public String approve(@PathVariable Long orderId) {
+        orderService.approveOrder(orderId);
+        return "Order " + orderId + " approved.";
     }
 
     @PatchMapping("/{orderId}/reject")
-    public Order rejectOrder(@PathVariable Long orderId) {
-        return orderService.rejectOrder(orderId);
+    public String reject(@PathVariable Long orderId) {
+        orderService.rejectOrder(orderId);
+        return "Order " + orderId + " rejected.";
     }
 }
