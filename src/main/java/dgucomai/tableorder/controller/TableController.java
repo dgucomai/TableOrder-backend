@@ -15,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/staff")
 public class TableController {
-    private final TableService tableService; //TableService 연결
+    private final TableService tableService;
 
     @GetMapping("/tables")
     public List<TableSummaryResponseDto> getAllTables() {
