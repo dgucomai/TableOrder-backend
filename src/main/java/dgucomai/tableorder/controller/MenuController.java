@@ -1,6 +1,6 @@
 package dgucomai.tableorder.controller;
 
-import dgucomai.tableorder.dto.MenuResponse;
+import dgucomai.tableorder.dto.MenuResDto;
 import dgucomai.tableorder.service.MenuService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,7 @@ public class MenuController {
   private final MenuService menuService;
 
   @GetMapping
-  public List<MenuResponse> getAllMenus() {
+  public List<MenuResDto> getAllMenus() {
     return menuService.getAllMenus();
   }
 }

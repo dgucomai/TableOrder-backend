@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "menu_categories")
 @Getter
 @NoArgsConstructor
-public class MenuCategory {
+public class MenuCategories {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "category_id")

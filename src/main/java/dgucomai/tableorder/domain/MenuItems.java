@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "menu_items")
 @Getter
 @NoArgsConstructor
-public class MenuItem {
+public class MenuItems {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,7 +18,7 @@ public class MenuItem {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "category_id")
-  private MenuCategory category;
+  private MenuCategories category;
 
   @Column(name = "menu_name")
   private String menuName;
