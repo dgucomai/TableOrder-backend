@@ -34,4 +34,8 @@ public class MenuItem {
 
   @Column(name = "created_at")
   private LocalDateTime createdAt;
+
+  public void updateSoldOut(boolean isSoldOut) {
+    this.isSoldOut = isSoldOut;
+  }
 }
