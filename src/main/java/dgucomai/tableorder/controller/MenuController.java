@@ -1,8 +1,10 @@
 package dgucomai.tableorder.controller;
 
+import dgucomai.tableorder.dto.ApiResDto;
 import dgucomai.tableorder.dto.MenuResDto;
 import dgucomai.tableorder.service.MenuService;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,7 +18,9 @@ public class MenuController {
   private final MenuService menuService;
 
   @GetMapping
-  public List<MenuResDto> getAllMenus() {
-    return menuService.getAllMenus();
+  public ApiResDto<Map<String, List<MenuResDto>>> getAllMenus() {
+    List<MenuResDto> menus = menuService.getAllMenus();
+    Map<String, List<MenuResDto>> data = Map.of("menus", menus);
+    return ApiResDto.success(data, "메뉴 목록 조회 성공");
   }
 }
