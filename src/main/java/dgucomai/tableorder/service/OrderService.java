@@ -11,6 +11,7 @@ import dgucomai.tableorder.exception.ErrorCode;
 import dgucomai.tableorder.repository.MenuItemRepository;
 import dgucomai.tableorder.repository.OrderRepository;
 import dgucomai.tableorder.repository.StaffCallRepository;
+import dgucomai.tableorder.sse.SseEmitterManager;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -25,10 +26,22 @@ public class OrderService {
   private final StaffCallRepository staffCallRepository;
   private final OrderRepository orderRepository;
   private final MenuItemRepository menuItemRepository;
+  private final SseEmitterManager sseEmitterManager;
 
   public void callStaff(Long tableId) {
     StaffCall staffCall = new StaffCall(tableId);
+    staffCall.setCallType("STAFF");
     staffCallRepository.save(staffCall);
+
+    sseEmitterManager.sendEventToStaff("STAFF_CALL_CREATED", tableId);
+  }
+
+  public void callDealer(Long tableId) {
+    StaffCall dealerCall = new StaffCall(tableId);
+    dealerCall.setCallType("DEALER");
+    staffCallRepository.save(dealerCall);
+
+    sseEmitterManager.sendEventToStaff("DEALER_CALL_CREATED", tableId);
   }
 
   public OrderResDto createOrder(OrderCreateReqDto request) {
@@ -41,10 +54,12 @@ public class OrderService {
           menuItemRepository
               .findById(itemReq.menuId())
               .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
+
       if (menuItem.isSoldOut()) {
         throw new CustomException(
             ErrorCode.MENU_SOLD_OUT, menuItem.getMenuName() + "은(는) 현재 품절된 메뉴입니다.");
       }
+
       totalAmount += menuItem.getPrice() * itemReq.quantity();
       menuItems.add(menuItem);
     }
@@ -53,7 +68,10 @@ public class OrderService {
     for (int i = 0; i < itemRequests.size(); i++) {
       orders.addOrderItem(new OrderItems(orders, menuItems.get(i), itemRequests.get(i).quantity()));
     }
+
     orderRepository.save(orders);
+
+    sseEmitterManager.sendEventToStaff("PAYMENT_REQUEST_CREATED", request.tableId());
 
     return OrderResDto.from(orders);
   }

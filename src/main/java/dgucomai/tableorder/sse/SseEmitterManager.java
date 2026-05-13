@@ -12,6 +12,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class SseEmitterManager {
 
   private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
+  private final Map<String, SseEmitter> staffEmitters = new ConcurrentHashMap<>();
 
   public SseEmitter connect(String tableNo) {
     SseEmitter emitter = new SseEmitter(1800000L);
@@ -29,6 +30,37 @@ public class SseEmitterManager {
     }
 
     return emitter;
+  }
+
+  public SseEmitter connectStaff(String staffId) {
+    SseEmitter emitter = new SseEmitter(1800000L);
+    staffEmitters.put(staffId, emitter);
+
+    emitter.onCompletion(() -> staffEmitters.remove(staffId));
+    emitter.onTimeout(() -> staffEmitters.remove(staffId));
+    emitter.onError(e -> staffEmitters.remove(staffId));
+
+    try {
+      emitter.send(SseEmitter.event().name("connected").data("connected"));
+    } catch (IOException e) {
+      staffEmitters.remove(staffId);
+      emitter.completeWithError(e);
+    }
+
+    return emitter;
+  }
+
+  public void sendEventToStaff(String eventName, Object data) {
+    for (Map.Entry<String, SseEmitter> entry : new ArrayList<>(staffEmitters.entrySet())) {
+      try {
+        entry
+            .getValue()
+            .send(SseEmitter.event().name(eventName).data(data, MediaType.APPLICATION_JSON));
+      } catch (IOException e) {
+        staffEmitters.remove(entry.getKey());
+        entry.getValue().completeWithError(e);
+      }
+    }
   }
 
   public void broadcastSoldOut(Long menuId, boolean isSoldOut) {
