@@ -17,15 +17,16 @@ public class OrderController {
   private final OrderService orderService;
 
   @PostMapping("/staff-call")
-  public ResponseEntity<String> staffCall(@RequestParam Long tableId) {
+  public ResponseEntity<ApiResDto<Void>> staffCall(@RequestParam Long tableId) {
     orderService.callStaff(tableId);
-    return ResponseEntity.ok(tableId + "번 테이블의 호출이 접수되었습니다.");
+    return ResponseEntity.ok(new ApiResDto<>(true, null, "STAFF_CALL_CREATED"));
   }
 
   @PostMapping("/orders")
   public ResponseEntity<ApiResDto<OrderResDto>> createOrder(
       @RequestBody OrderCreateReqDto request) {
     OrderResDto response = orderService.createOrder(request);
-    return ResponseEntity.status(HttpStatus.CREATED).body(ApiResDto.success(response));
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(new ApiResDto<>(true, response, "PAYMENT_REQUEST_CREATED"));
   }
 }
