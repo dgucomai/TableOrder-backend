@@ -1,52 +1,55 @@
 package dgucomai.tableorder.controller;
 
-import dgucomai.tableorder.domain.Order;
 import dgucomai.tableorder.service.OrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/staff/orders") // 모든 주소의 시작점
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class OrderController {
 
     private final OrderService orderService;
 
-    // 1. 대기 주문 조회 (GET /api/staff/orders)
-    @GetMapping
-    public List<Order> getAllOrders() {
-        return orderService.findAllOrders();
-    }
-
-    // 2. 결제 승인 (PATCH /api/staff/orders/{orderId}/approve)
-    @PatchMapping("/{orderId}/approve")
-    public String approveOrder(@PathVariable Long orderId) {
+    @PatchMapping("/orders/{orderId}/approve")
+    public ResponseEntity<?> approveOrder(@PathVariable Long orderId) {
         orderService.approveOrder(orderId);
-        return orderId + "번 주문이 승인(APPROVED) 되었습니다.";
+        return getResponse(orderId, "ORDER_APPROVED", "주문 승인 완료", "COOKING", 101, "관리자", null);
     }
 
-    // 3. 결제 반려 (PATCH /api/staff/orders/{orderId}/reject)[cite: 1]
-    @PatchMapping("/{orderId}/reject")
-    public String rejectOrder(@PathVariable Long orderId) {
+    @DeleteMapping("/staff/orders/{orderId}")
+    public ResponseEntity<?> rejectOrder(@PathVariable Long orderId) {
         orderService.rejectOrder(orderId);
-        return orderId + "번 주문이 반려(REJECTED) 되었습니다.";
+        return getResponse(orderId, "ORDER_REJECTED", "주문 반려 완료", "REJECTED", 2, "김직원", null);
     }
 
-    // 4. 주문 삭제 (DELETE /api/staff/orders/{orderId})
-    // 기획서에는 없지만 관리용으로 유지합니다.[cite: 1]
-    @DeleteMapping("/{orderId}")
-    public String deleteOrder(@PathVariable Long orderId) {
-        orderService.deleteOrder(orderId);
-        return orderId + "번 주문 데이터가 삭제되었습니다.";
+    @PatchMapping("/staff/orders/{orderId}/status")
+    public ResponseEntity<?> updateStatus(@PathVariable Long orderId, @RequestBody Map<String, String> request) {
+        String newStatus = request.get("status");
+        orderService.updateOrderStatus(orderId, newStatus);
+
+        return getResponse(orderId, "ORDER_STATUS_CHANGED", "주문 상태 변경 완료", newStatus.toUpperCase(), 2, "김직원", LocalDateTime.now().toString());
     }
 
-    // 5. 상태 변경 (PATCH /api/staff/orders/{orderId}/status)
-    // 조리 중, 완료 등 범용적으로 상태를 바꿀 때 사용합니다.[cite: 1]
-    @PatchMapping("/{orderId}/status")
-    public String updateStatus(@PathVariable Long orderId, @RequestParam Order.OrderStatus status) {
-        // 서비스에 상태 변경 로직이 연결되면 작동합니다.
-        return orderId + "번 주문의 상태가 " + status + "(으)로 변경되었습니다.";
+    private ResponseEntity<?> getResponse(Long orderId, String code, String msg, String oStatus, int staffId, String staffName, String completedAt) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("success", true);
+        response.put("code", code);
+        response.put("message", msg);
+
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("orderId", orderId);
+        data.put("orderStatus", oStatus);
+        if (completedAt != null) data.put("completedAt", completedAt);
+        data.put("changedByStaffId", staffId);
+        data.put("changedByStaffName", staffName);
+
+        response.put("data", data);
+        return ResponseEntity.ok(response);
     }
 }
