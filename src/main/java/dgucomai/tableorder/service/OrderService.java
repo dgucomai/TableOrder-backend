@@ -12,7 +12,6 @@ import dgucomai.tableorder.repository.MenuItemRepository;
 import dgucomai.tableorder.repository.OrderRepository;
 import dgucomai.tableorder.repository.StaffCallRepository;
 import dgucomai.tableorder.sse.SseEmitterManager;
-import java.lang.reflect.Field;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,38 +29,45 @@ public class OrderService {
   @Transactional
   public void callStaff(Long tableId) {
     StaffCall staffCall = new StaffCall(tableId);
+    staffCall.setCallType("STAFF");
     staffCallRepository.save(staffCall);
     sseEmitterManager.sendEventToStaff("STAFF_CALL_CREATED", tableId);
   }
 
   @Transactional
+  public void callDealer(Long tableId) {
+    StaffCall dealerCall = new StaffCall(tableId);
+    dealerCall.setCallType("DEALER");
+    staffCallRepository.save(dealerCall);
+    sseEmitterManager.sendEventToStaff("DEALER_CALL_CREATED", tableId);
+  }
+
+  @Transactional
   public OrderResDto createOrder(OrderCreateReqDto dto) {
-    Orders order = new Orders(dto.tableId(), 0);
-
-    int calculatedTotalAmount = 0;
-
+    int total = 0;
     for (OrderCreateReqDto.OrderItemReqDto itemDto : dto.items()) {
       MenuItems menu =
           menuItemRepository
               .findById(itemDto.menuId())
               .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
 
-      OrderItems orderItem = new OrderItems(order, menu, itemDto.quantity());
-      order.getOrderItems().add(orderItem);
-      calculatedTotalAmount += orderItem.getSubtotal();
+      if (menu.isSoldOut()) {
+        throw new CustomException(ErrorCode.MENU_SOLD_OUT, menu.getMenuName() + "은(는) 품절되었습니다.");
+      }
+      total += (menu.getPrice() * itemDto.quantity());
     }
 
-    try {
-      Field field = Orders.class.getDeclaredField("totalAmount");
-      field.setAccessible(true);
-      field.set(order, calculatedTotalAmount);
-    } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new RuntimeException(e);
+    Orders order = new Orders(dto.tableId(), total);
+
+    for (OrderCreateReqDto.OrderItemReqDto itemDto : dto.items()) {
+      MenuItems menu = menuItemRepository.findById(itemDto.menuId()).get();
+      OrderItems orderItem = new OrderItems(order, menu, itemDto.quantity());
+      order.addOrderItem(orderItem);
     }
 
     orderRepository.save(order);
 
-    sseEmitterManager.sendEventToStaff("PAYMENT_REQUEST_CREATED", order.getOrderId());
+    sseEmitterManager.sendEventToStaff("PAYMENT_REQUEST_CREATED", dto.tableId());
 
     return OrderResDto.from(order);
   }

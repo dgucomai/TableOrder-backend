@@ -22,11 +22,17 @@ public class OrderController {
     return ResponseEntity.ok(new ApiResDto<>(true, null, "STAFF_CALL_CREATED"));
   }
 
+  @PostMapping("/dealer-call")
+  public ResponseEntity<ApiResDto<Void>> dealerCall(@RequestParam Long tableId) {
+    orderService.callDealer(tableId);
+    return ResponseEntity.ok(new ApiResDto<>(true, null, "DEALER_CALL_CREATED"));
+  }
+
   @PostMapping("/orders")
   public ResponseEntity<ApiResDto<OrderResDto>> createOrder(
       @RequestBody OrderCreateReqDto request) {
     OrderResDto response = orderService.createOrder(request);
-    return ResponseEntity.status(HttpStatus.CREATED)
-        .body(new ApiResDto<>(true, response, "PAYMENT_REQUEST_CREATED"));
+    return new ResponseEntity<>(
+        new ApiResDto<>(true, response, "PAYMENT_REQUEST_CREATED"), HttpStatus.CREATED);
   }
 }

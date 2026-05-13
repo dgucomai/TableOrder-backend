@@ -4,9 +4,11 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 @Table(name = "staff_calls")
 public class StaffCall {
@@ -22,6 +24,9 @@ public class StaffCall {
   private LocalDateTime callTime;
 
   private boolean isResolved;
+
+  @Column(name = "call_type")
+  private String callType;
 
   public StaffCall(Long tableId) {
     this.tableId = tableId;
