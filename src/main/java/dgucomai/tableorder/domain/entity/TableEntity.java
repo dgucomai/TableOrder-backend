@@ -2,8 +2,8 @@ package dgucomai.tableorder.domain.entity;
 
 import dgucomai.tableorder.domain.type.TableStatus;
 import jakarta.persistence.*;
-import lombok.*;
 import java.time.LocalDateTime;
+import lombok.*;
 
 @Entity
 @Getter
@@ -11,24 +11,23 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "tables")
-
 public class TableEntity {
 
-    @Id
-    @Column(name = "table_id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long tableId;
+  @Id
+  @Column(name = "table_id")
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long tableId;
 
-    @Column(name = "table_number")
-    private Integer tableNumber;
+  @Column(name = "table_number")
+  private Integer tableNumber;
 
-    @Column(name = "qr_token")
-    private String qrToken;
+  @Column(name = "qr_token")
+  private String qrToken;
 
-    @Column(name = "status")
-    @Enumerated(EnumType.STRING)
-    private TableStatus status;
+  @Column(name = "status")
+  @Enumerated(EnumType.STRING)
+  private TableStatus status;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+  @Column(name = "created_at")
+  private LocalDateTime createdAt;
 }
