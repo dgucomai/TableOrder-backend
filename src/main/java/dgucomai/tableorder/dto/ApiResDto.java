@@ -1,16 +1,12 @@
 package dgucomai.tableorder.dto;
 
-public record ApiResDto<T>(boolean success, String code, String message, T data) {
+public record ApiResDto<T>(boolean success, T data, String message) {
 
   public static <T> ApiResDto<T> success(T data) {
-    return new ApiResDto<>(true, "OK", "정상 처리되었습니다.", data);
+    return new ApiResDto<>(true, data, null);
   }
 
-  public static <T> ApiResDto<T> success(T data, String message) {
-    return new ApiResDto<>(true, "OK", message, data);
-  }
-
-  public static <T> ApiResDto<T> error(String code, String message) {
-    return new ApiResDto<>(false, code, message, null);
+  public static <T> ApiResDto<T> error(String message) {
+    return new ApiResDto<>(false, null, message);
   }
 }

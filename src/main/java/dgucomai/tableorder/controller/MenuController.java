@@ -1,8 +1,8 @@
 package dgucomai.tableorder.controller;
 
-import dgucomai.tableorder.dto.ApiResDto;
 import dgucomai.tableorder.dto.MenuResDto;
 import dgucomai.tableorder.service.MenuService;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -18,9 +18,15 @@ public class MenuController {
   private final MenuService menuService;
 
   @GetMapping
-  public ApiResDto<Map<String, List<MenuResDto>>> getAllMenus() {
+  public Map<String, Object> getAllMenus() {
     List<MenuResDto> menus = menuService.getAllMenus();
-    Map<String, List<MenuResDto>> data = Map.of("menus", menus);
-    return ApiResDto.success(data, "메뉴 목록 조회 성공");
+
+    Map<String, Object> response = new LinkedHashMap<>();
+    response.put("success", true);
+    response.put("code", "OK");
+    response.put("message", "메뉴 목록 조회 성공");
+    response.put("data", Map.of("menus", menus));
+
+    return response;
   }
 }

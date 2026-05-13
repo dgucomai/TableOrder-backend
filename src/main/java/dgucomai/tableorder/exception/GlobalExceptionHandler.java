@@ -11,6 +11,6 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(CustomException.class)
   public ResponseEntity<ApiResDto<Void>> handleCustomException(CustomException e) {
     return ResponseEntity.status(e.getErrorCode().getStatus())
-        .body(ApiResDto.error(e.getErrorCode().name(), e.getMessage()));
+            .body(ApiResDto.error(e.getMessage()));
   }
 }
