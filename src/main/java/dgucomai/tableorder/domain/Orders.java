@@ -51,4 +51,9 @@ public class Orders {
   public void addOrderItem(OrderItems orderItems) {
     this.orderItems.add(orderItems);
   }
+
+  // 👇 서비스(OrderService)에서 사용할 상태 변경 스위치 병합 완료!
+  public void updateStatus(OrderStatus newStatus) {
+    this.orderStatus = newStatus;
+  }
 }
