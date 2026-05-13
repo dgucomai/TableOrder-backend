@@ -10,13 +10,22 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class StaffCall {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "id")
   private Long id;
 
+  @Column(name = "table_id", nullable = false)
   private Long tableId;
+
+  @Column(name = "message")
   private String message;
+
+  @Column(name = "status")
   private String status;
+
+  @Column(name = "created_at")
   private LocalDateTime createdAt;
 
   public StaffCall(Long tableId, String message) {
