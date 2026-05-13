@@ -30,12 +30,9 @@ public class OrderController {
 
   @PostMapping("/orders")
   public ResponseEntity<ApiResDto<OrderResDto>> createOrder(
-          @RequestBody OrderCreateReqDto request) {
+      @RequestBody OrderCreateReqDto request) {
     OrderResDto response = orderService.createOrder(request);
-
     return new ResponseEntity<>(
-            new ApiResDto<>(true, response, "PAYMENT_REQUEST_CREATED"),
-            HttpStatus.CREATED
-    );
+        new ApiResDto<>(true, response, "PAYMENT_REQUEST_CREATED"), HttpStatus.CREATED);
   }
 }
