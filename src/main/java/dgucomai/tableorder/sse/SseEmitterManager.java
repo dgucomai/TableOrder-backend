@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -64,17 +65,15 @@ public class SseEmitterManager {
 
   public void broadcastSoldOut(Long menuId, boolean isSoldOut) {
     Map<String, Object> data = Map.of("menuId", menuId, "isSoldOut", isSoldOut);
-    sendEventToAll("menu-sold-out", data);
+    sendEventToAllTables("menu-sold-out", data);
   }
 
-  public void sendEventToStaff(String eventName, Object data) {
-    sendEventToAll(eventName, data);
-  }
-
-  private void sendEventToAll(String eventName, Object data) {
+  private void sendEventToAllTables(String eventName, Object data) {
     for (Map.Entry<String, SseEmitter> entry : new ArrayList<>(emitters.entrySet())) {
       try {
-        entry.getValue().send(SseEmitter.event().name(eventName).data(data));
+        entry
+            .getValue()
+            .send(SseEmitter.event().name(eventName).data(data, MediaType.APPLICATION_JSON));
       } catch (IOException e) {
         emitters.remove(entry.getKey());
       }
