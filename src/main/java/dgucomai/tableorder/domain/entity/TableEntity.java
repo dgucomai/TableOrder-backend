@@ -30,4 +30,7 @@ public class TableEntity {
 
   @Column(name = "created_at")
   private LocalDateTime createdAt;
+
+  @Column(name = "current_session_id")
+  private Long currentSessionId;
 }
