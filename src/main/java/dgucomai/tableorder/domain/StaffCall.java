@@ -4,33 +4,34 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
+@Table(name = "calls")
 @Getter
-@Setter
 @NoArgsConstructor
-@Table(name = "staff_calls")
 public class StaffCall {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "id")
   private Long id;
 
-  @Column(nullable = false)
+  @Column(name = "table_id", nullable = false)
   private Long tableId;
 
-  @Column(nullable = false)
-  private LocalDateTime callTime;
+  @Column(name = "message")
+  private String message;
 
-  private boolean isResolved;
+  @Column(name = "status")
+  private String status;
 
-  @Column(name = "call_type")
-  private String callType;
+  @Column(name = "created_at")
+  private LocalDateTime createdAt;
 
-  public StaffCall(Long tableId) {
+  public StaffCall(Long tableId, String message) {
     this.tableId = tableId;
-    this.callTime = LocalDateTime.now();
-    this.isResolved = false;
+    this.message = message;
+    this.status = "REQUESTED";
+    this.createdAt = LocalDateTime.now();
   }
 }
