@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GameExceptionHandler {
 
-    @ExceptionHandler(GameApiException.class)
-    public ResponseEntity<ApiResDto<Void>> handleGameApiException(GameApiException e) {
-        return ResponseEntity.status(e.getStatus()).body(ApiResDto.error(e.getMessage()));
-    }
+  @ExceptionHandler(GameApiException.class)
+  public ResponseEntity<ApiResDto<Void>> handleGameApiException(GameApiException e) {
+    return ResponseEntity.status(e.getStatus()).body(ApiResDto.error(e.getMessage()));
+  }
 }

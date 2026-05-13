@@ -12,27 +12,27 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TableSessions {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "session_id")
-    private Long sessionId;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "session_id")
+  private Long sessionId;
 
-    @Column(name = "table_id", nullable = false)
-    private Long tableId;
+  @Column(name = "table_id", nullable = false)
+  private Long tableId;
 
-    @Column(name = "cleared_by")
-    private Long clearedBy;
+  @Column(name = "cleared_by")
+  private Long clearedBy;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private TableSessionStatus status;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "status", nullable = false)
+  private TableSessionStatus status;
 
-    @Column(name = "token_count", nullable = false)
-    private int tokenCount;
+  @Column(name = "token_count", nullable = false)
+  private int tokenCount;
 
-    @Column(name = "started_at")
-    private LocalDateTime startedAt;
+  @Column(name = "started_at")
+  private LocalDateTime startedAt;
 
-    @Column(name = "cleared_at")
-    private LocalDateTime clearedAt;
+  @Column(name = "cleared_at")
+  private LocalDateTime clearedAt;
 }

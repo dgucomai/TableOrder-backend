@@ -11,24 +11,24 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Tables {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "table_id")
-    private Long tableId;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "table_id")
+  private Long tableId;
 
-    @Column(name = "table_number", nullable = false)
-    private Integer tableNumber;
+  @Column(name = "table_number", nullable = false)
+  private Integer tableNumber;
 
-    @Column(name = "qr_token", nullable = false)
-    private String qrToken;
+  @Column(name = "qr_token", nullable = false)
+  private String qrToken;
 
-    @Column(name = "status")
-    private String status;
+  @Column(name = "status")
+  private String status;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+  @Column(name = "created_at")
+  private LocalDateTime createdAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "current_session_id")
-    private TableSessions currentSession;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "current_session_id")
+  private TableSessions currentSession;
 }
