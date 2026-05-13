@@ -28,10 +28,18 @@ public class StaffCall {
   @Column(name = "created_at")
   private LocalDateTime createdAt;
 
+  @Column(name = "resolved_at")
+  private LocalDateTime resolvedAt;
+
   public StaffCall(Long tableId, String message) {
     this.tableId = tableId;
     this.message = message;
     this.status = "REQUESTED";
     this.createdAt = LocalDateTime.now();
+  }
+
+  public void resolve() {
+    this.status = "RESOLVED";
+    this.resolvedAt = LocalDateTime.now();
   }
 }
