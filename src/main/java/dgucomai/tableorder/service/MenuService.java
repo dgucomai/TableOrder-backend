@@ -21,9 +21,13 @@ public class MenuService {
   private final SseEmitterManager sseEmitterManager;
 
   public List<MenuResDto> getAllMenus() {
-    return menuItemRepository.findAllWithCategory().stream()
-        .map(MenuResDto::from)
-        .collect(Collectors.toList());
+    try {
+      return menuItemRepository.findAllWithCategory().stream()
+          .map(MenuResDto::from)
+          .collect(Collectors.toList());
+    } catch (Exception e) {
+      throw new CustomException(ErrorCode.MENU_LIST_FETCH_FAILED);
+    }
   }
 
   @Transactional
