@@ -25,17 +25,17 @@ public class GameUsers {
   @Column(name = "phone_number", nullable = false)
   private String phoneNumber;
 
-  @Column(name = "score_1", nullable = false)
-  private int score1;
+  @Column(name = "flappy_bird_score", nullable = false)
+  private int flappyBirdScore;
 
-  @Column(name = "score_2", nullable = false)
-  private int score2;
+  @Column(name = "rock_paper_scissors_score", nullable = false)
+  private int rockPaperScissorsScore;
 
-  @Column(name = "score_3", nullable = false)
-  private int score3;
+  @Column(name = "ako_growing_score", nullable = false)
+  private int akoGrowingScore;
 
-  @Column(name = "score_4", nullable = false)
-  private int score4;
+  @Column(name = "basketball_score", nullable = false)
+  private int basketballScore;
 
   @Column(name = "created_at", nullable = false)
   private LocalDateTime createdAt;
@@ -44,20 +44,20 @@ public class GameUsers {
     this.sessionId = sessionId;
     this.nickname = nickname;
     this.phoneNumber = phoneNumber;
-    this.score1 = 0;
-    this.score2 = 0;
-    this.score3 = 0;
-    this.score4 = 0;
+    this.flappyBirdScore = 0;
+    this.rockPaperScissorsScore = 0;
+    this.akoGrowingScore = 0;
+    this.basketballScore = 0;
     this.createdAt = LocalDateTime.now();
   }
 
   public void update(
       String nickname,
       String phoneNumber,
-      Integer score1,
-      Integer score2,
-      Integer score3,
-      Integer score4) {
+      Integer flappyBirdScore,
+      Integer rockPaperScissorsScore,
+      Integer akoGrowingScore,
+      Integer basketballScore) {
     if (nickname != null) {
       this.nickname = nickname;
     }
@@ -66,29 +66,29 @@ public class GameUsers {
       this.phoneNumber = phoneNumber;
     }
 
-    if (score1 != null) {
-      this.score1 = score1;
+    if (flappyBirdScore != null) {
+      this.flappyBirdScore = flappyBirdScore;
     }
 
-    if (score2 != null) {
-      this.score2 = score2;
+    if (rockPaperScissorsScore != null) {
+      this.rockPaperScissorsScore = rockPaperScissorsScore;
     }
 
-    if (score3 != null) {
-      this.score3 = score3;
+    if (akoGrowingScore != null) {
+      this.akoGrowingScore = akoGrowingScore;
     }
 
-    if (score4 != null) {
-      this.score4 = score4;
+    if (basketballScore != null) {
+      this.basketballScore = basketballScore;
     }
   }
 
   public int getScoreByGameIndex(int gameIndex) {
     return switch (gameIndex) {
-      case 1 -> score1;
-      case 2 -> score2;
-      case 3 -> score3;
-      case 4 -> score4;
+      case 1 -> flappyBirdScore;
+      case 2 -> rockPaperScissorsScore;
+      case 3 -> akoGrowingScore;
+      case 4 -> basketballScore;
       default -> 0;
     };
   }

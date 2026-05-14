@@ -27,14 +27,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class GameUserService {
 
   private final GameUserRepository gameUserRepository;
-  private final GameTableRepository tableRepository;
+  private final GameTableRepository gameTableRepository;
 
   @Transactional
   public GameUserCreateResDto createUser(GameUserCreateReqDto request) {
     validateCreateRequest(request);
 
     Tables table =
-        tableRepository
+        gameTableRepository
             .findByQrToken(request.qrToken())
             .orElseThrow(
                 () -> new GameApiException(HttpStatus.NOT_FOUND, "QR 토큰에 해당하는 테이블을 찾을 수 없습니다."));
@@ -65,10 +65,10 @@ public class GameUserService {
     gameUsers.update(
         request.nickname(),
         request.phoneNumber(),
-        request.score_1(),
-        request.score_2(),
-        request.score_3(),
-        request.score_4());
+        request.flappyBirdScore(),
+        request.rockPaperScissorsScore(),
+        request.akoGrowingScore(),
+        request.basketballScore());
 
     return GameUserUpdateResDto.from(gameUsers);
   }
@@ -92,16 +92,26 @@ public class GameUserService {
       rankings.add(GameRankingItemResDto.from(gameUsers.get(i), i + 1, game));
     }
 
-    return new GameRankingListResDto("game" + game, rankings);
+    return new GameRankingListResDto(getGameName(game), rankings);
   }
 
   private List<GameUsers> findTop5ByGameIndex(int game) {
     return switch (game) {
-      case 1 -> gameUserRepository.findTop5ByOrderByScore1DescCreatedAtAsc();
-      case 2 -> gameUserRepository.findTop5ByOrderByScore2DescCreatedAtAsc();
-      case 3 -> gameUserRepository.findTop5ByOrderByScore3DescCreatedAtAsc();
-      case 4 -> gameUserRepository.findTop5ByOrderByScore4DescCreatedAtAsc();
+      case 1 -> gameUserRepository.findTop5ByOrderByFlappyBirdScoreDescCreatedAtAsc();
+      case 2 -> gameUserRepository.findTop5ByOrderByRockPaperScissorsScoreDescCreatedAtAsc();
+      case 3 -> gameUserRepository.findTop5ByOrderByAkoGrowingScoreDescCreatedAtAsc();
+      case 4 -> gameUserRepository.findTop5ByOrderByBasketballScoreDescCreatedAtAsc();
       default -> throw new GameApiException(HttpStatus.BAD_REQUEST, "지원하지 않는 게임 인덱스입니다.");
+    };
+  }
+
+  private String getGameName(int game) {
+    return switch (game) {
+      case 1 -> "flappyBird";
+      case 2 -> "rockPaperScissors";
+      case 3 -> "akoGrowing";
+      case 4 -> "basketball";
+      default -> "unknown";
     };
   }
 

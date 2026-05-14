@@ -6,11 +6,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface GameUserRepository extends JpaRepository<GameUsers, Long> {
 
-  List<GameUsers> findTop5ByOrderByScore1DescCreatedAtAsc();
+  List<GameUsers> findTop5ByOrderByFlappyBirdScoreDescCreatedAtAsc();
 
-  List<GameUsers> findTop5ByOrderByScore2DescCreatedAtAsc();
+  List<GameUsers> findTop5ByOrderByRockPaperScissorsScoreDescCreatedAtAsc();
 
-  List<GameUsers> findTop5ByOrderByScore3DescCreatedAtAsc();
+  List<GameUsers> findTop5ByOrderByAkoGrowingScoreDescCreatedAtAsc();
 
-  List<GameUsers> findTop5ByOrderByScore4DescCreatedAtAsc();
+  List<GameUsers> findTop5ByOrderByBasketballScoreDescCreatedAtAsc();
 }

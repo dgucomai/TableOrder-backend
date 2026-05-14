@@ -7,10 +7,10 @@ public record GameUserResDto(
     Long userId,
     String nickname,
     String phoneLast4,
-    int score_1,
-    int score_2,
-    int score_3,
-    int score_4,
+    int flappyBirdScore,
+    int rockPaperScissorsScore,
+    int akoGrowingScore,
+    int basketballScore,
     LocalDateTime createdAt) {
 
   public static GameUserResDto from(GameUsers gameUsers) {
@@ -18,10 +18,10 @@ public record GameUserResDto(
         gameUsers.getUserId(),
         gameUsers.getNickname(),
         getPhoneLast4(gameUsers.getPhoneNumber()),
-        gameUsers.getScore1(),
-        gameUsers.getScore2(),
-        gameUsers.getScore3(),
-        gameUsers.getScore4(),
+        gameUsers.getFlappyBirdScore(),
+        gameUsers.getRockPaperScissorsScore(),
+        gameUsers.getAkoGrowingScore(),
+        gameUsers.getBasketballScore(),
         gameUsers.getCreatedAt());
   }
 
