@@ -51,4 +51,14 @@ public class Orders {
   public void addOrderItem(OrderItems orderItems) {
     this.orderItems.add(orderItems);
   }
+
+  public void updateStatus(String status) {
+    this.orderStatus = OrderStatus.valueOf(status);
+
+    if (this.orderStatus == OrderStatus.COOKING) {
+      this.approvedAt = LocalDateTime.now();
+    } else if (this.orderStatus == OrderStatus.COMPLETED) {
+      this.completedAt = LocalDateTime.now();
+    }
+  }
 }
