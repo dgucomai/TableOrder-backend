@@ -4,6 +4,7 @@ import dgucomai.tableorder.domain.MenuItems;
 import dgucomai.tableorder.domain.OrderItems;
 import dgucomai.tableorder.domain.Orders;
 import dgucomai.tableorder.domain.StaffCall;
+import dgucomai.tableorder.domain.enums.OrderStatus;
 import dgucomai.tableorder.dto.OrderCreateReqDto;
 import dgucomai.tableorder.dto.OrderResDto;
 import dgucomai.tableorder.repository.MenuItemRepository;
@@ -25,15 +26,15 @@ public class OrderService {
   private final SseEmitterManager sseEmitterManager;
 
   @Transactional
-  public void callStaff(Long tableId) {
-    StaffCall staffCall = new StaffCall(tableId, "STAFF_CALL");
+  public void callStaff(Long tableId, Long sessionId) {
+    StaffCall staffCall = new StaffCall(tableId, sessionId, "STAFF", "직원 호출");
     staffCallRepository.save(staffCall);
     sseEmitterManager.sendEventToStaff("STAFF_CALL_CREATED", tableId);
   }
 
   @Transactional
-  public void callDealer(Long tableId) {
-    StaffCall dealerCall = new StaffCall(tableId, "DEALER_CALL");
+  public void callDealer(Long tableId, Long sessionId) {
+    StaffCall dealerCall = new StaffCall(tableId, sessionId, "DEALER", "딜러 호출");
     staffCallRepository.save(dealerCall);
     sseEmitterManager.sendEventToStaff("DEALER_CALL_CREATED", tableId);
   }
@@ -65,6 +66,10 @@ public class OrderService {
             .findById(orderId)
             .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
+    if (order.getOrderStatus() != OrderStatus.PAYMENT_PENDING) {
+      throw new IllegalStateException("입금 대기 중인 주문만 승인 가능합니다.");
+    }
+
     order.updateStatus("COOKING");
     sseEmitterManager.sendEventToStaff("ORDER_APPROVED", order.getTableId());
   }
@@ -76,7 +81,11 @@ public class OrderService {
             .findById(orderId)
             .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
-    orderRepository.delete(order);
+    if (order.getOrderStatus() != OrderStatus.PAYMENT_PENDING) {
+      throw new IllegalStateException("입금 대기 중인 주문만 반려 가능합니다.");
+    }
+
+    order.updateStatus("REJECTED");
     sseEmitterManager.sendEventToStaff("ORDER_REJECTED", order.getTableId());
   }
 
@@ -86,19 +95,17 @@ public class OrderService {
         orderRepository
             .findById(orderId)
             .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
-
     order.updateStatus(status);
     sseEmitterManager.sendEventToStaff("ORDER_STATUS_CHANGED", order.getTableId());
   }
 
   @Transactional
-  public void resolveCall(Long callId) {
+  public void resolveCall(Long callId, Long staffId) {
     StaffCall staffCall =
         staffCallRepository
             .findById(callId)
             .orElseThrow(() -> new IllegalArgumentException("호출 내역을 찾을 수 없습니다."));
-
-    staffCall.resolve();
+    staffCall.resolve(staffId);
     sseEmitterManager.sendEventToStaff("CALL_RESOLVED", staffCall.getTableId());
   }
 }
