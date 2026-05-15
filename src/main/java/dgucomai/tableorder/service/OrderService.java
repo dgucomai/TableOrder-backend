@@ -71,6 +71,14 @@ public class OrderService {
         int total = 0;
 //      Orders order = new Orders(dto.tableId(), total);
 
+    for (OrderCreateReqDto.OrderItemReqDto itemDto : dto.items()) {
+      MenuItems menu =
+          menuItemRepository
+              .findById(itemDto.menuId())
+              .orElseThrow(() -> new IllegalArgumentException("메뉴를 찾을 수 없습니다."));
+      OrderItems orderItem = new OrderItems(order, menu, itemDto.quantity());
+      order.addOrderItem(orderItem);
+    }
         for (OrderCreateReqDto.OrderItemReqDto itemDto : dto.items()) {
             MenuItems menu = menuItemRepospackage dgucomai.tableorder.service;
 
@@ -149,5 +157,49 @@ public class OrderService {
     sseEmitterManager.sendEventToStaff("PAYMENT_REQUEST_CREATED", dto.tableId());
 
     return OrderResDto.from(order);
+  }
+
+  @Transactional
+  public void approveOrder(Long orderId) {
+    Orders order =
+        orderRepository
+            .findById(orderId)
+            .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+
+    order.updateStatus("COOKING");
+    sseEmitterManager.sendEventToStaff("ORDER_APPROVED", order.getTableId());
+  }
+
+  @Transactional
+  public void rejectOrder(Long orderId) {
+    Orders order =
+        orderRepository
+            .findById(orderId)
+            .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+
+    orderRepository.delete(order);
+    sseEmitterManager.sendEventToStaff("ORDER_REJECTED", order.getTableId());
+  }
+
+  @Transactional
+  public void updateOrderStatus(Long orderId, String status) {
+    Orders order =
+        orderRepository
+            .findById(orderId)
+            .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+
+    order.updateStatus(status);
+    sseEmitterManager.sendEventToStaff("ORDER_STATUS_CHANGED", order.getTableId());
+  }
+
+  @Transactional
+  public void resolveCall(Long callId) {
+    StaffCall staffCall =
+        staffCallRepository
+            .findById(callId)
+            .orElseThrow(() -> new IllegalArgumentException("호출 내역을 찾을 수 없습니다."));
+
+    staffCall.resolve();
+    sseEmitterManager.sendEventToStaff("CALL_RESOLVED", staffCall.getTableId());
   }
 }
