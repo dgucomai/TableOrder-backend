@@ -71,18 +71,20 @@ public class OrderController {
     @PostMapping("/staff-call")
     public ResponseEntity<ApiResDto<Void>> staffCall(@RequestParam Long tableId) {
         orderService.callStaff(tableId);
-        return ResponseEntity.ok(new ApiResDto<>(true, null, "STAFF_CALL_CREATED", "직원 호출 완료"));
+        return ResponseEntity.ok(new ApiResDto<>(true, null, "STAFF_CALL_CREATED"));
     }
 
     @PostMapping("/dealer-call")
     public ResponseEntity<ApiResDto<Void>> dealerCall(@RequestParam Long tableId) {
         orderService.callDealer(tableId);
-        return ResponseEntity.ok(new ApiResDto<>(true, null, "DEALER_CALL_CREATED", "딜러 호출 완료"));
+        return ResponseEntity.ok(new ApiResDto<>(true, null, "DEALER_CALL_CREATED"));
     }
 
     @PostMapping("/orders")
-    public ResponseEntity<ApiResDto<OrderResDto>> createOrder(@RequestBody OrderCreateReqDto request) {
+    public ResponseEntity<ApiResDto<OrderResDto>> createOrder(
+            @RequestBody OrderCreateReqDto request) {
         OrderResDto response = orderService.createOrder(request);
-        return new ResponseEntity<>(new ApiResDto<>(true, response, "PAYMENT_REQUEST_CREATED", "주문 생성 완료"), HttpStatus.CREATED);
+        return new ResponseEntity<>(
+                new ApiResDto<>(true, response, "PAYMENT_REQUEST_CREATED"), HttpStatus.CREATED);
     }
 }
