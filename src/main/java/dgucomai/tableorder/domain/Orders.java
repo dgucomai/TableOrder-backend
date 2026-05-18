@@ -12,7 +12,8 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "orders")
-@Getter @Setter // 서비스 레이어에서 편하게 쓰기 위해 Setter 유지
+@Getter
+@Setter // 서비스 레이어에서 편하게 쓰기 위해 Setter 유지
 @NoArgsConstructor
 public class Orders {
 
@@ -36,6 +37,7 @@ public class Orders {
   private LocalDateTime checkedAt;
   private Long checkedByStaffId;
   private String checkedByStaffName;
+
   // --- 정빈 님 추가 필드 끝 ---
 
   @Column(name = "total_amount")
@@ -57,7 +59,7 @@ public class Orders {
   public Orders(Long tableId, int totalAmount) {
     this.tableId = tableId;
     this.orderStatus = OrderStatus.PAYMENT_PENDING; // dev 기준값
-    this.paymentStatus = PaymentStatus.PENDING;     // 정빈 님 필드 초기화
+    this.paymentStatus = PaymentStatus.PENDING; // 정빈 님 필드 초기화
     this.totalAmount = totalAmount;
     this.createdAt = LocalDateTime.now();
   }
