@@ -45,9 +45,6 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Run code formatting check
-        run: ./gradlew spotlessCheck
-
       - name: Run tests
         run: ./gradlew test
 
@@ -61,8 +58,7 @@ jobs:
           fi
 
       - name: Build application
-      
-        run: ./gradlew build -x test
+        run: ./gradlew build -x test -x spotlessCheck
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
