@@ -1,7 +1,7 @@
 package dgucomai.tableorder.service;
 
 import dgucomai.tableorder.domain.GameUsers;
-import dgucomai.tableorder.domain.entity.TableSession;
+import dgucomai.tableorder.domain.TableSessions;
 import dgucomai.tableorder.domain.Tables;
 import dgucomai.tableorder.domain.enums.TableSessionStatus;
 import dgucomai.tableorder.dto.GameRankingItemResDto;
@@ -39,7 +39,7 @@ public class GameUserService {
             .orElseThrow(
                 () -> new GameApiException(HttpStatus.NOT_FOUND, "QR 토큰에 해당하는 테이블을 찾을 수 없습니다."));
 
-    TableSession currentSession = table.getCurrentSession();
+    TableSessions currentSession = table.getCurrentSession();
 
     if (currentSession == null || currentSession.getStatus() != TableSessionStatus.ACTIVE) {
       throw new GameApiException(HttpStatus.NOT_FOUND, "현재 활성화된 테이블 세션을 찾을 수 없습니다.");
