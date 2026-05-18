@@ -48,9 +48,8 @@ public class TableService {
     return TableDetailResponseDto.from(table, session);
   }
 
-  // 테이블 정리 메서드
   @Transactional
-  public void clearTable(Long tableId, Long staffId) {
+  public TableDetailResponseDto clearTable(Long tableId, Long staffId) {
     // 1. tableId로 물리 테이블 조회
     TableEntity table =
         tableRepository
@@ -65,7 +64,7 @@ public class TableService {
 
     // 3. 멱등성 검사: 현재 세션이 이미 CLOSED이면 추가 변경 없이 종료
     if (TableStatus.EMPTY.equals(currentSession.getStatus())) {
-      return;
+      return TableDetailResponseDto.from(table, currentSession);
     }
 
     // 4. 기존 ACTIVE 세션을 CLOSED로 종료 처리
@@ -88,5 +87,6 @@ public class TableService {
     tableRepository.save(table);
 
     // 7. (참고) 이후 컨트롤러단 혹은 이벤트 리스너를 통해 TABLE_STATUS_CHANGED SSE를 발행해야 합니다.
+    return TableDetailResponseDto.from(table, savedNewSession);
   }
 }
