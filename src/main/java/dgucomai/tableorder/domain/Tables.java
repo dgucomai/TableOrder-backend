@@ -22,8 +22,10 @@ public class Tables {
   @Column(name = "qr_token", nullable = false)
   private String qrToken;
 
+  /*
   @Column(name = "status")
   private String status;
+   */
 
   @Column(name = "created_at")
   private LocalDateTime createdAt;
