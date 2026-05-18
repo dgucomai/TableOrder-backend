@@ -8,9 +8,10 @@ import dgucomai.tableorder.domain.enums.OrderStatus;
 import dgucomai.tableorder.dto.OrderCreateReqDto;
 import dgucomai.tableorder.dto.OrderResDto;
 import dgucomai.tableorder.repository.MenuItemRepository;
-import dgucomai.tableorder.repository.OrderRepository;
+import dgucomai.tableorder.repository.OrdersRepository;
 import dgucomai.tableorder.repository.StaffCallRepository;
 import dgucomai.tableorder.sse.SseEmitterManager;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class OrderService {
 
-  private final OrderRepository orderRepository;
+  private final OrdersRepository orderRepository;
   private final MenuItemRepository menuItemRepository;
   private final StaffCallRepository staffCallRepository;
   private final SseEmitterManager sseEmitterManager;
@@ -53,7 +54,12 @@ public class OrderService {
       order.addOrderItem(orderItem);
     }
 
+    // 기본 주문 정보 기입 후 저장
+    order.setCompletedAt(LocalDateTime.now());
+
     orderRepository.save(order);
+
+    // 주점 관리자 화면(Staff용 웹)으로 주문 알림 SSE 발송
     sseEmitterManager.sendEventToStaff("PAYMENT_REQUEST_CREATED", dto.tableId());
 
     return OrderResDto.from(order);
