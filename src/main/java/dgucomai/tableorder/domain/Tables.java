@@ -1,5 +1,6 @@
 package dgucomai.tableorder.domain;
 
+import dgucomai.tableorder.domain.entity.TableSession;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.Getter;
@@ -27,5 +28,5 @@ public class Tables {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "current_session_id")
-  private TableSessions currentSession;
+  private TableSession currentSession;
 }
