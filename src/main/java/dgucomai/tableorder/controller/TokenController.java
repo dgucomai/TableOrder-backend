@@ -1,8 +1,9 @@
 package dgucomai.tableorder.controller;
 
-import dgucomai.tableorder.dto.ApiResDto;
 import dgucomai.tableorder.dto.TokenResDto;
 import dgucomai.tableorder.service.TokenService;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,8 +19,15 @@ public class TokenController {
   private final TokenService tokenService;
 
   @GetMapping("/{tableId}")
-  public ResponseEntity<ApiResDto<TokenResDto>> getTokenCount(@PathVariable Long tableId) {
+  public ResponseEntity<Map<String, Object>> getTokenCount(@PathVariable Long tableId) {
     TokenResDto response = tokenService.getTokenCount(tableId);
-    return ResponseEntity.ok(ApiResDto.success(response));
+
+    Map<String, Object> customResponse = new LinkedHashMap<>();
+    customResponse.put("success", true);
+    customResponse.put("code", "OK");
+    customResponse.put("message", "토큰 수 조회 성공");
+    customResponse.put("data", response);
+
+    return ResponseEntity.ok(customResponse);
   }
 }
