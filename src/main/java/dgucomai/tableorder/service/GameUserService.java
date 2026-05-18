@@ -1,8 +1,8 @@
 package dgucomai.tableorder.service;
 
 import dgucomai.tableorder.domain.GameUsers;
-import dgucomai.tableorder.domain.Tables;
 import dgucomai.tableorder.domain.entity.TableSession;
+import dgucomai.tableorder.domain.Tables;
 import dgucomai.tableorder.domain.enums.TableSessionStatus;
 import dgucomai.tableorder.dto.GameRankingItemResDto;
 import dgucomai.tableorder.dto.GameRankingListResDto;
