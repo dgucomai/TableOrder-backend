@@ -40,6 +40,13 @@ public class Orders {
 
   // --- 정빈 님 추가 필드 끝 ---
 
+  // --- 정환 님 추가 필드 시작 ---
+
+  @Column(name = "session_id")
+  private Long sessionId;
+
+  // --- 정환 님 추가 필드 끝 ---
+
   @Column(name = "total_amount")
   private int totalAmount;
 

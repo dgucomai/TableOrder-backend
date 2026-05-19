@@ -1,8 +1,6 @@
 package dgucomai.tableorder.domain.entity;
 
-import dgucomai.tableorder.domain.type.TableStatus;
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 import lombok.*;
 
 @Entity
@@ -24,13 +22,6 @@ public class TableEntity {
 
   @Column(name = "qr_token")
   private String qrToken;
-
-  @Column(name = "status")
-  @Enumerated(EnumType.STRING)
-  private TableStatus status;
-
-  @Column(name = "created_at")
-  private LocalDateTime createdAt;
 
   @Column(name = "current_session_id")
   private Long currentSessionId;
