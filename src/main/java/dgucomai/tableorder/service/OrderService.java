@@ -43,7 +43,9 @@ public class OrderService {
   @Transactional
   public OrderResDto createOrder(OrderCreateReqDto dto) {
     int total = 0;
-    Orders order = new Orders(dto.tableId(), total);
+
+    // [수정] Orders 생성자 인자 개수에 맞게 가운데에 null(changed_by 없음)을 삽입합니다.
+    Orders order = new Orders(dto.tableId(), null, total);
 
     for (OrderCreateReqDto.OrderItemReqDto itemDto : dto.items()) {
       MenuItems menu =
@@ -65,8 +67,9 @@ public class OrderService {
     return OrderResDto.from(order);
   }
 
+  // [수정] 6.5 명세서 및 메서드 시그니처 변경에 따라 staffId를 파라미터로 받습니다.
   @Transactional
-  public void approveOrder(Long orderId) {
+  public void approveOrder(Long orderId, Long staffId) {
     Orders order =
         orderRepository
             .findById(orderId)
@@ -76,12 +79,14 @@ public class OrderService {
       throw new IllegalStateException("입금 대기 중인 주문만 승인 가능합니다.");
     }
 
-    order.updateStatus("COOKING");
+    // [수정] 문자열 "COOKING" 대신 Enum 타입과 처리한 직원 ID를 함께 전달합니다.
+    order.updateStatus(OrderStatus.COOKING, staffId);
     sseEmitterManager.sendEventToStaff("ORDER_APPROVED", order.getTableId());
   }
 
+  // [수정] 6.5 명세서 및 메서드 시그니처 변경에 따라 staffId를 파라미터로 받습니다.
   @Transactional
-  public void rejectOrder(Long orderId) {
+  public void rejectOrder(Long orderId, Long staffId) {
     Orders order =
         orderRepository
             .findById(orderId)
@@ -91,17 +96,21 @@ public class OrderService {
       throw new IllegalStateException("입금 대기 중인 주문만 반려 가능합니다.");
     }
 
-    order.updateStatus("REJECTED");
+    // [수정] 문자열 "REJECTED" 대신 Enum 타입과 처리한 직원 ID를 함께 전달합니다.
+    order.updateStatus(OrderStatus.REJECTED, staffId);
     sseEmitterManager.sendEventToStaff("ORDER_REJECTED", order.getTableId());
   }
 
+  // [수정] 6.5 명세서 및 메서드 시그니처 변경에 따라 staffId를 파라미터로 받습니다.
   @Transactional
-  public void updateOrderStatus(Long orderId, String status) {
+  public void updateOrderStatus(Long orderId, String status, Long staffId) {
     Orders order =
         orderRepository
             .findById(orderId)
             .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
-    order.updateStatus(status);
+
+    // [수정] 들어온 외부 문자열 status를 OrderStatus Enum 타입으로 변환하고 staffId를 함께 전달합니다.
+    order.updateStatus(OrderStatus.valueOf(status), staffId);
     sseEmitterManager.sendEventToStaff("ORDER_STATUS_CHANGED", order.getTableId());
   }
 
