@@ -8,7 +8,9 @@ public enum ErrorCode {
   ORDER_NOT_FOUND("해당 주문을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
   MENU_LIST_FETCH_FAILED("메뉴 목록 조회 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
   TABLE_NOT_FOUND("해당 테이블을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-  TABLE_SESSION_NOT_FOUND("현재 활성화된 테이블 세션을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+  TABLE_SESSION_NOT_FOUND("현재 활성화된 테이블 세션을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+  INVALID_TOKEN_DELTA("토큰 증감값 형식이 올바르지 않습니다.", HttpStatus.BAD_REQUEST),
+  TOKEN_COUNT_NEGATIVE_NOT_ALLOWED("토큰 수량은 0보다 작아질 수 없습니다.", HttpStatus.CONFLICT);
 
   private final String message;
   private final HttpStatus status;
