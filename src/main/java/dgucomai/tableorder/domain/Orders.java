@@ -31,6 +31,8 @@ public class Orders {
   @Column(name = "order_status", length = 20)
   private OrderStatus orderStatus;
 
+  @Column(name = "changed_by")
+  private Long changedBy;
 
   @Column(name = "total_amount")
   private int totalAmount;
@@ -59,12 +61,13 @@ public class Orders {
     this.orderItems.add(orderItems);
   }
 
-  public void updateStatus(OrderStatus status) {
+  public void updateStatus(OrderStatus status, Long staffId) {
     this.orderStatus = status;
+    this.changedBy = staffId;
 
     if (this.orderStatus == OrderStatus.COOKING) {
       this.approvedAt = LocalDateTime.now();
-    } else if (this.orderStatus == OrderStatus.DONE) { // COMPLETED에서 DONE으로 수정
+    } else if (this.orderStatus == OrderStatus.COMPLETED) {
       this.completedAt = LocalDateTime.now();
     }
   }
