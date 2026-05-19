@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class TokenController {
 
   private final TokenService tokenService;
-  
+
   @GetMapping("/{tableId}")
   public ResponseEntity<Map<String, Object>> getTokenCount(@PathVariable Long tableId) {
     TokenResDto response = tokenService.getTokenCount(tableId);
