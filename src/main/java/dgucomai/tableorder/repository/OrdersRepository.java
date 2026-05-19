@@ -2,5 +2,7 @@ package dgucomai.tableorder.repository;
 
 import dgucomai.tableorder.domain.Orders;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface OrderRepository extends JpaRepository<Orders, Long> {}
+@Repository
+public interface OrdersRepository extends JpaRepository<Orders, Long> {}

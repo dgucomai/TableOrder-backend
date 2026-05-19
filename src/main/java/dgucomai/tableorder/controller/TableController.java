@@ -2,13 +2,12 @@ package dgucomai.tableorder.controller;
 
 import dgucomai.tableorder.domain.response.table.TableDetailResponseDto;
 import dgucomai.tableorder.domain.response.table.TableSummaryResponseDto;
+import dgucomai.tableorder.dto.ApiResDto;
 import dgucomai.tableorder.service.table.TableService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,5 +23,13 @@ public class TableController {
   @GetMapping("/tables/{tableId}")
   public TableDetailResponseDto getTableById(@PathVariable Long tableId) {
     return tableService.getTableById(tableId);
+  }
+
+  @PatchMapping("/tables/{tableId}/clear")
+  public ResponseEntity<ApiResDto<TableDetailResponseDto>> clearTable(
+      @PathVariable Long tableId, @RequestParam Long staffId) {
+    TableDetailResponseDto responseData = tableService.clearTable(tableId, staffId);
+    ApiResDto<TableDetailResponseDto> body = ApiResDto.success(responseData);
+    return ResponseEntity.ok(body);
   }
 }
