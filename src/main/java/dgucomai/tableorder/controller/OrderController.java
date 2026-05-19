@@ -30,7 +30,11 @@ public class OrderController {
       @PathVariable Long orderId, @RequestBody Map<String, String> request) {
 
     String newStatus = request.get("status");
-    orderService.updateOrderStatus(orderId, newStatus);
+
+    // [수정] 아래 하드코딩된 더미 직원 ID(2번)와 발 맞춰서 서비스에 2L을 전달합니다.
+    // 추후 로그인 기능이 붙으면 이 자리에 실제 로그인한 직원 ID를 넣어주시면 됩니다!
+    Long dummyStaffId = 2L;
+    orderService.updateOrderStatus(orderId, newStatus, dummyStaffId);
 
     var data =
         new OrderStatusData(
@@ -67,13 +71,15 @@ public class OrderController {
 
   @PatchMapping("/staff/orders/{orderId}/approve")
   public ResponseEntity<ApiResDto<Void>> approveOrder(@PathVariable Long orderId) {
-    orderService.approveOrder(orderId);
+    // [수정] 서비스가 요구하는 staffId 인자 규칙에 맞게 임시 더미 ID(2L)를 넘겨줍니다.
+    orderService.approveOrder(orderId, 2L);
     return ResponseEntity.ok(new ApiResDto<>(true, null, "ORDER_APPROVED"));
   }
 
   @DeleteMapping("/staff/orders/{orderId}")
   public ResponseEntity<ApiResDto<Void>> rejectOrder(@PathVariable Long orderId) {
-    orderService.rejectOrder(orderId);
+    // [수정] 서비스가 요구하는 staffId 인자 규칙에 맞게 임시 더미 ID(2L)를 넘겨줍니다.
+    orderService.rejectOrder(orderId, 2L);
     return ResponseEntity.ok(new ApiResDto<>(true, null, "ORDER_REJECTED"));
   }
 
