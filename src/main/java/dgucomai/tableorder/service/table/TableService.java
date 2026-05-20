@@ -6,12 +6,14 @@ import dgucomai.tableorder.domain.entity.StaffCall;
 import dgucomai.tableorder.domain.entity.TableSession;
 import dgucomai.tableorder.domain.entity.Tables;
 import dgucomai.tableorder.domain.enums.OrderStatus;
-import dgucomai.tableorder.domain.enums.PaymentStatus;
 import dgucomai.tableorder.domain.enums.TableSessionStatus;
 import dgucomai.tableorder.domain.type.TableStatus;
 import dgucomai.tableorder.dto.res.OrderResDto;
 import dgucomai.tableorder.dto.res.TableDetailResDto;
+import dgucomai.tableorder.dto.res.TableNumResDto;
 import dgucomai.tableorder.dto.res.TableSummaryResDto;
+import dgucomai.tableorder.exception.CustomException;
+import dgucomai.tableorder.exception.ErrorCode;
 import dgucomai.tableorder.repository.OrdersRepository;
 import dgucomai.tableorder.repository.StaffCallRepository;
 import dgucomai.tableorder.repository.table.StaffRepository;
@@ -37,6 +39,17 @@ public class TableService {
   private final SseEmitterManager sseEmitterManager;
 
   @Transactional(readOnly = true)
+  public TableNumResDto getTableNumByQrToken(String qrToken) {
+    Tables table =
+        tableRepository
+            .findByQrToken(qrToken)
+            .orElseThrow(
+                () ->
+                    new CustomException(ErrorCode.TABLE_NOT_FOUND, "QR 토큰에 해당하는 테이블을 찾을 수 없습니다."));
+    return TableNumResDto.from(table);
+  }
+
+  @Transactional(readOnly = true)
   public List<TableSummaryResDto> getAllTables() {
     List<Tables> tables = tableRepository.findAll();
 
@@ -58,8 +71,8 @@ public class TableService {
                   } else if (staffCallRepository.existsBySessionIdAndCallTypeAndStatus(
                       session.getSessionId(), "STAFF", "REQUESTED")) {
                     calculatedStatus = TableStatus.STAFF_CALL;
-                  } else if (ordersRepository.existsBySessionIdAndPaymentStatus(
-                      session.getSessionId(), PaymentStatus.PENDING)) {
+                  } else if (ordersRepository.existsBySessionIdAndOrderStatus(
+                      session.getSessionId(), OrderStatus.PAYMENT_PENDING)) {
                     calculatedStatus = TableStatus.PAYMENT_PENDING;
                   }
                 }
@@ -106,7 +119,7 @@ public class TableService {
         dbCalls.stream()
             .anyMatch(c -> "STAFF".equals(c.getCallType()) && "REQUESTED".equals(c.getStatus()));
     boolean hasPaymentPending =
-        dbOrders.stream().anyMatch(o -> o.getPaymentStatus() == PaymentStatus.PENDING);
+        dbOrders.stream().anyMatch(o -> o.getOrderStatus() == OrderStatus.PAYMENT_PENDING);
     if (hasDealerCall) {
       calculatedStatus = TableStatus.DEALER_CALL;
     } else if (hasStaffCall) {

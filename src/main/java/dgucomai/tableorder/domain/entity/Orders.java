@@ -1,7 +1,6 @@
 package dgucomai.tableorder.domain.entity;
 
 import dgucomai.tableorder.domain.enums.OrderStatus;
-import dgucomai.tableorder.domain.enums.PaymentStatus;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -32,17 +31,6 @@ public class Orders {
   @Column(name = "order_status", length = 20)
   private OrderStatus orderStatus;
 
-  @Enumerated(EnumType.STRING)
-  @Column(name = "payment_status", length = 20)
-  private PaymentStatus paymentStatus;
-
-  private LocalDateTime checkedAt;
-  private Long checkedByStaffId;
-  private String checkedByStaffName;
-
-  @Column(name = "changed_by")
-  private Long changedBy;
-
   @Column(name = "total_amount")
   private int totalAmount;
 
@@ -55,6 +43,9 @@ public class Orders {
   @Column(name = "completed_at")
   private LocalDateTime completedAt;
 
+  @Column(name = "checked_by_staff_id")
+  private Long checkedByStaffId;
+
   @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<OrderItems> orderItems = new ArrayList<>();
 
@@ -62,7 +53,6 @@ public class Orders {
     this.tableId = tableId;
     this.sessionId = sessionId;
     this.orderStatus = OrderStatus.PAYMENT_PENDING;
-    this.paymentStatus = PaymentStatus.PENDING;
     this.totalAmount = totalAmount;
     this.createdAt = LocalDateTime.now();
   }
@@ -71,12 +61,11 @@ public class Orders {
     this.orderItems.add(orderItems);
   }
 
-  public void updateStatus(String status) {
-    this.orderStatus = OrderStatus.valueOf(status.toUpperCase());
+  public void updateStatus(OrderStatus status) {
+    this.orderStatus = status;
 
     if (this.orderStatus == OrderStatus.COOKING) {
       this.approvedAt = LocalDateTime.now();
-      this.paymentStatus = PaymentStatus.APPROVED;
     } else if (this.orderStatus == OrderStatus.COMPLETED
         || this.orderStatus == OrderStatus.CANCELLED) {
       this.completedAt = LocalDateTime.now();
