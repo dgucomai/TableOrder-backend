@@ -14,7 +14,7 @@ public class StaffCall {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "call_id")
-  private Long callId;
+  private Long id;
 
   @Column(name = "table_id", nullable = false)
   private Long tableId;

@@ -3,8 +3,8 @@ package dgucomai.tableorder.controller;
 import dgucomai.tableorder.dto.ApiResDto;
 import dgucomai.tableorder.dto.OrderCreateReqDto;
 import dgucomai.tableorder.dto.OrderResDto;
+import dgucomai.tableorder.dto.StaffCallReqDto;
 import dgucomai.tableorder.service.OrderService;
-import java.time.LocalDateTime;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,42 +18,22 @@ public class OrderController {
 
   private final OrderService orderService;
 
-  public record OrderStatusData(
-      Long orderId,
-      String orderStatus,
-      String completedAt,
-      int changedByStaffId,
-      String changedByStaffName) {}
-
   @PatchMapping("/staff/orders/{orderId}/status")
-  public ResponseEntity<ApiResDto<OrderStatusData>> updateStatus(
+  public ResponseEntity<ApiResDto<Void>> updateStatus(
       @PathVariable Long orderId, @RequestBody Map<String, String> request) {
-
-    String newStatus = request.get("status");
-    orderService.updateOrderStatus(orderId, newStatus);
-
-    var data =
-        new OrderStatusData(
-            orderId,
-            newStatus.toUpperCase(),
-            "COMPLETED".equalsIgnoreCase(newStatus) ? LocalDateTime.now().toString() : null,
-            2,
-            "김직원");
-
-    return ResponseEntity.ok(new ApiResDto<>(true, data, "ORDER_STATUS_CHANGED"));
+    orderService.updateOrderStatus(orderId, request.get("status"));
+    return ResponseEntity.ok(new ApiResDto<>(true, null, "ORDER_STATUS_CHANGED"));
   }
 
   @PostMapping("/staff-call")
-  public ResponseEntity<ApiResDto<Void>> staffCall(
-      @RequestParam Long tableId, @RequestParam Long sessionId) {
-    orderService.callStaff(tableId, sessionId);
+  public ResponseEntity<ApiResDto<Void>> staffCall(@RequestBody StaffCallReqDto request) {
+    orderService.callStaff(request.qrToken(), request.message());
     return ResponseEntity.ok(new ApiResDto<>(true, null, "STAFF_CALL_CREATED"));
   }
 
   @PostMapping("/dealer-call")
-  public ResponseEntity<ApiResDto<Void>> dealerCall(
-      @RequestParam Long tableId, @RequestParam Long sessionId) {
-    orderService.callDealer(tableId, sessionId);
+  public ResponseEntity<ApiResDto<Void>> dealerCall(@RequestBody StaffCallReqDto request) {
+    orderService.callDealer(request.qrToken(), request.message());
     return ResponseEntity.ok(new ApiResDto<>(true, null, "DEALER_CALL_CREATED"));
   }
 
