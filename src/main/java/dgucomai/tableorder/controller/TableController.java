@@ -17,13 +17,15 @@ public class TableController {
   private final TableService tableService;
 
   @GetMapping("/tables")
-  public List<TableSummaryResDto> getAllTables() {
-    return tableService.getAllTables();
+  public ResponseEntity<ApiResDto<List<TableSummaryResDto>>> getAllTables() {
+    List<TableSummaryResDto> responseData = tableService.getAllTables();
+    return ResponseEntity.ok(ApiResDto.success(responseData));
   }
 
   @GetMapping("/tables/{tableId}")
-  public TableDetailResDto getTableById(@PathVariable Long tableId) {
-    return tableService.getTableById(tableId);
+  public ResponseEntity<ApiResDto<TableDetailResDto>> getTableById(@PathVariable Long tableId) {
+    TableDetailResDto responseData = tableService.getTableById(tableId);
+    return ResponseEntity.ok(ApiResDto.success(responseData));
   }
 
   @PatchMapping("/tables/{tableId}/clear")
