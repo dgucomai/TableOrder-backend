@@ -1,7 +1,6 @@
 package dgucomai.tableorder.domain.entity;
 
 import dgucomai.tableorder.domain.enums.OrderStatus;
-import dgucomai.tableorder.domain.enums.PaymentStatus;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,26 +21,15 @@ public class Orders {
   @Column(name = "order_id")
   private Long orderId;
 
-  @Column(name = "table_id")
+  @Column(name = "table_id", nullable = false)
   private Long tableId;
 
-  @Column(name = "session_id")
+  @Column(name = "session_id", nullable = false)
   private Long sessionId;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "order_status", length = 20)
   private OrderStatus orderStatus;
-
-  @Enumerated(EnumType.STRING)
-  @Column(name = "payment_status", length = 20)
-  private PaymentStatus paymentStatus;
-
-  private LocalDateTime checkedAt;
-  private Long checkedByStaffId;
-  private String checkedByStaffName;
-
-  @Column(name = "changed_by")
-  private Long changedBy;
 
   @Column(name = "total_amount")
   private int totalAmount;
@@ -58,11 +46,13 @@ public class Orders {
   @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<OrderItems> orderItems = new ArrayList<>();
 
+  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<PaymentRequest> paymentRequestList = new ArrayList<>();
+
   public Orders(Long tableId, Long sessionId, int totalAmount) {
     this.tableId = tableId;
     this.sessionId = sessionId;
     this.orderStatus = OrderStatus.PAYMENT_PENDING;
-    this.paymentStatus = PaymentStatus.PENDING;
     this.totalAmount = totalAmount;
     this.createdAt = LocalDateTime.now();
   }
@@ -76,7 +66,6 @@ public class Orders {
 
     if (this.orderStatus == OrderStatus.COOKING) {
       this.approvedAt = LocalDateTime.now();
-      this.paymentStatus = PaymentStatus.APPROVED;
     } else if (this.orderStatus == OrderStatus.COMPLETED
         || this.orderStatus == OrderStatus.CANCELLED) {
       this.completedAt = LocalDateTime.now();

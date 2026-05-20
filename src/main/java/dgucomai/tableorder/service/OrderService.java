@@ -3,8 +3,11 @@ package dgucomai.tableorder.service;
 import dgucomai.tableorder.domain.entity.MenuItems;
 import dgucomai.tableorder.domain.entity.OrderItems;
 import dgucomai.tableorder.domain.entity.Orders;
+import dgucomai.tableorder.domain.entity.PaymentRequest;
 import dgucomai.tableorder.domain.entity.StaffCall;
+import dgucomai.tableorder.domain.entity.TableSession;
 import dgucomai.tableorder.domain.enums.OrderStatus;
+import dgucomai.tableorder.domain.enums.TableSessionStatus;
 import dgucomai.tableorder.dto.req.OrderCreateReqDto;
 import dgucomai.tableorder.dto.res.OrderResDto;
 import dgucomai.tableorder.repository.MenuItemRepository;
@@ -12,6 +15,7 @@ import dgucomai.tableorder.repository.OrdersRepository;
 import dgucomai.tableorder.repository.StaffCallRepository;
 import dgucomai.tableorder.sse.SseEmitterManager;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,18 +32,83 @@ public class OrderService {
   private final EntityManager em;
 
   private Object[] getValidTableInfo(String qrToken) {
-    return (Object[])
-        em.createQuery(
-                "SELECT t.tableId, t.currentSessionId FROM Tables t WHERE t.qrToken = :qrToken")
-            .setParameter("qrToken", qrToken)
-            .getSingleResult();
+    try {
+      return (Object[])
+          em.createQuery(
+                  "SELECT t.tableId, t.currentSessionId FROM Tables t WHERE t.qrToken = :qrToken")
+              .setParameter("qrToken", qrToken)
+              .getSingleResult();
+    } catch (NoResultException e) {
+      throw new IllegalArgumentException("404 TABLE_NOT_FOUND");
+    }
+  }
+
+  private void activateSessionIfNeeded(Long sessionId) {
+    em.createQuery(
+            "UPDATE TableSession ts "
+                + "SET ts.status = :activeStatus, ts.startedAt = CURRENT_TIMESTAMP "
+                + "WHERE ts.sessionId = :sessionId AND ts.status = :closedStatus")
+        .setParameter("activeStatus", TableSessionStatus.ACTIVE)
+        .setParameter("closedStatus", TableSessionStatus.CLOSED)
+        .setParameter("sessionId", sessionId)
+        .executeUpdate();
+  }
+
+  private void createPaymentRequest(Orders order) {
+    PaymentRequest paymentRequest = new PaymentRequest(order.getOrderId());
+    em.persist(paymentRequest);
+  }
+
+  @Transactional
+  public OrderResDto createOrder(OrderCreateReqDto dto) {
+    Object[] info = getValidTableInfo(dto.qrToken());
+
+    Long tableId = ((Number) info[0]).longValue();
+    Long sessionId = (info[1] != null) ? ((Number) info[1]).longValue() : null;
+
+    if (sessionId == null) {
+      throw new IllegalArgumentException("404 TABLE_SESSION_NOT_FOUND");
+    }
+
+    activateSessionIfNeeded(sessionId);
+
+    TableSession tableSession = em.find(TableSession.class, sessionId);
+    if (tableSession == null) {
+      throw new IllegalArgumentException("404 TABLE_SESSION_NOT_FOUND");
+    }
+
+    Orders order = new Orders(tableId, tableSession.getSessionId(), 0);
+
+    for (OrderCreateReqDto.OrderItemReqDto itemDto : dto.items()) {
+      MenuItems menu =
+          menuItemRepository
+              .findById(itemDto.menuId())
+              .orElseThrow(() -> new IllegalArgumentException("404 MENU_NOT_FOUND"));
+
+      if (menu.isSoldOut()) {
+        throw new IllegalStateException("400 MENU_SOLD_OUT");
+      }
+      order.addOrderItem(new OrderItems(order, menu, itemDto.quantity()));
+    }
+
+    orderRepository.save(order);
+    createPaymentRequest(order);
+    sseEmitterManager.sendEventToStaff("PAYMENT_REQUEST_CREATED", tableId);
+
+    return OrderResDto.from(order);
   }
 
   @Transactional
   public void callStaff(String qrToken, String message) {
     Object[] info = getValidTableInfo(qrToken);
-    Long tableId = (Long) info[0];
-    Long sessionId = (Long) info[1];
+    Long tableId = ((Number) info[0]).longValue();
+    Long sessionId = (info[1] != null) ? ((Number) info[1]).longValue() : null;
+
+    if (sessionId == null) {
+      throw new IllegalArgumentException("404 TABLE_SESSION_NOT_FOUND");
+    }
+
+    activateSessionIfNeeded(sessionId);
 
     StaffCall call = new StaffCall(tableId, sessionId, "STAFF", message);
     staffCallRepository.save(call);
@@ -49,8 +118,14 @@ public class OrderService {
   @Transactional
   public void callDealer(String qrToken, String message) {
     Object[] info = getValidTableInfo(qrToken);
-    Long tableId = (Long) info[0];
-    Long sessionId = (Long) info[1];
+    Long tableId = ((Number) info[0]).longValue();
+    Long sessionId = (info[1] != null) ? ((Number) info[1]).longValue() : null;
+
+    if (sessionId == null) {
+      throw new IllegalArgumentException("404 TABLE_SESSION_NOT_FOUND");
+    }
+
+    activateSessionIfNeeded(sessionId);
 
     StaffCall call = new StaffCall(tableId, sessionId, "DEALER", message);
     staffCallRepository.save(call);
@@ -58,53 +133,30 @@ public class OrderService {
   }
 
   @Transactional
-  public OrderResDto createOrder(OrderCreateReqDto dto) {
-    Object[] info = getValidTableInfo(dto.qrToken());
-    Long tableId = (Long) info[0];
-    Long sessionId = (Long) info[1];
-
-    Orders order = new Orders(tableId, sessionId, 0);
-    for (OrderCreateReqDto.OrderItemReqDto itemDto : dto.items()) {
-      MenuItems menu =
-          menuItemRepository
-              .findById(itemDto.menuId())
-              .orElseThrow(() -> new IllegalArgumentException("메뉴 없음"));
-      order.addOrderItem(new OrderItems(order, menu, itemDto.quantity()));
-    }
-
-    orderRepository.save(order);
-    sseEmitterManager.sendEventToStaff("PAYMENT_REQUEST_CREATED", tableId);
-    return OrderResDto.from(order);
-  }
-
-  @Transactional
   public void approveOrder(Long orderId) {
     Orders order =
         orderRepository
             .findById(orderId)
-            .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("404 ORDER_NOT_FOUND"));
 
     if (order.getOrderStatus() != OrderStatus.PAYMENT_PENDING) {
-      throw new IllegalStateException("입금 대기 중인 주문만 승인 가능합니다.");
+      throw new IllegalStateException("400 INVALID_ORDER_STATUS");
     }
 
     order.updateStatus("COOKING");
-    sseEmitterManager.sendEventToStaff("ORDER_APPROVED", order.getTableId());
-  }
 
-  @Transactional
-  public void rejectOrder(Long orderId) {
-    Orders order =
-        orderRepository
-            .findById(orderId)
-            .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
-
-    if (order.getOrderStatus() != OrderStatus.PAYMENT_PENDING) {
-      throw new IllegalStateException("입금 대기 중인 주문만 반려 가능합니다.");
+    try {
+      PaymentRequest paymentRequest =
+          em.createQuery(
+                  "SELECT pr FROM PaymentRequest pr WHERE pr.orderId = :orderId",
+                  PaymentRequest.class)
+              .setParameter("orderId", orderId)
+              .getSingleResult();
+      paymentRequest.approve();
+    } catch (NoResultException e) {
     }
 
-    order.updateStatus("REJECTED");
-    sseEmitterManager.sendEventToStaff("ORDER_REJECTED", order.getTableId());
+    sseEmitterManager.sendEventToStaff("ORDER_APPROVED", order.getTableId());
   }
 
   @Transactional
@@ -112,10 +164,25 @@ public class OrderService {
     Orders order =
         orderRepository
             .findById(orderId)
-            .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("404 ORDER_NOT_FOUND"));
 
     order.updateStatus(status);
     sseEmitterManager.sendEventToStaff("ORDER_STATUS_CHANGED", order.getTableId());
+  }
+
+  @Transactional
+  public void rejectOrder(Long orderId) {
+    Orders order =
+        orderRepository
+            .findById(orderId)
+            .orElseThrow(() -> new IllegalArgumentException("404 ORDER_NOT_FOUND"));
+
+    if (order.getOrderStatus() != OrderStatus.PAYMENT_PENDING) {
+      throw new IllegalStateException("400 INVALID_ORDER_STATUS");
+    }
+
+    order.updateStatus("REJECTED");
+    sseEmitterManager.sendEventToStaff("ORDER_REJECTED", order.getTableId());
   }
 
   @Transactional
@@ -123,7 +190,7 @@ public class OrderService {
     StaffCall staffCall =
         staffCallRepository
             .findById(callId)
-            .orElseThrow(() -> new IllegalArgumentException("호출 내역을 찾을 수 없습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("404 CALL_NOT_FOUND"));
 
     staffCall.resolve(staffId);
     sseEmitterManager.sendEventToStaff("CALL_RESOLVED", staffCall.getTableId());

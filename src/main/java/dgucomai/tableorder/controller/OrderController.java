@@ -18,49 +18,91 @@ public class OrderController {
 
   private final OrderService orderService;
 
-  @PatchMapping("/staff/orders/{orderId}/status")
-  public ResponseEntity<ApiResDto<Void>> updateStatus(
-      @PathVariable Long orderId, @RequestBody Map<String, String> request) {
-    orderService.updateOrderStatus(orderId, request.get("status"));
-    return ResponseEntity.ok(new ApiResDto<>(true, null, "ORDER_STATUS_CHANGED"));
+  @PostMapping("/orders")
+  public ResponseEntity<ApiResDto<OrderResDto>> createOrder(
+      @RequestBody OrderCreateReqDto request) {
+    try {
+      OrderResDto response = orderService.createOrder(request);
+      return new ResponseEntity<>(
+          new ApiResDto<>(true, response, "PAYMENT_REQUEST_CREATED"), HttpStatus.CREATED);
+    } catch (Exception e) {
+      return handleException(e);
+    }
   }
 
   @PostMapping("/staff-call")
   public ResponseEntity<ApiResDto<Void>> staffCall(@RequestBody StaffCallReqDto request) {
-    orderService.callStaff(request.qrToken(), request.message());
-    return ResponseEntity.ok(new ApiResDto<>(true, null, "STAFF_CALL_CREATED"));
+    try {
+      orderService.callStaff(request.qrToken(), request.message());
+      return ResponseEntity.ok(new ApiResDto<>(true, null, "STAFF_CALL_CREATED"));
+    } catch (Exception e) {
+      return handleException(e);
+    }
   }
 
   @PostMapping("/dealer-call")
   public ResponseEntity<ApiResDto<Void>> dealerCall(@RequestBody StaffCallReqDto request) {
-    orderService.callDealer(request.qrToken(), request.message());
-    return ResponseEntity.ok(new ApiResDto<>(true, null, "DEALER_CALL_CREATED"));
-  }
-
-  @PostMapping("/orders")
-  public ResponseEntity<ApiResDto<OrderResDto>> createOrder(
-      @RequestBody OrderCreateReqDto request) {
-    OrderResDto response = orderService.createOrder(request);
-    return new ResponseEntity<>(
-        new ApiResDto<>(true, response, "PAYMENT_REQUEST_CREATED"), HttpStatus.CREATED);
+    try {
+      orderService.callDealer(request.qrToken(), request.message());
+      return ResponseEntity.ok(new ApiResDto<>(true, null, "DEALER_CALL_CREATED"));
+    } catch (Exception e) {
+      return handleException(e);
+    }
   }
 
   @PatchMapping("/staff/orders/{orderId}/approve")
   public ResponseEntity<ApiResDto<Void>> approveOrder(@PathVariable Long orderId) {
-    orderService.approveOrder(orderId);
-    return ResponseEntity.ok(new ApiResDto<>(true, null, "ORDER_APPROVED"));
+    try {
+      orderService.approveOrder(orderId);
+      return ResponseEntity.ok(new ApiResDto<>(true, null, "ORDER_APPROVED"));
+    } catch (Exception e) {
+      return handleException(e);
+    }
   }
 
-  @DeleteMapping("/staff/orders/{orderId}")
-  public ResponseEntity<ApiResDto<Void>> rejectOrder(@PathVariable Long orderId) {
-    orderService.rejectOrder(orderId);
-    return ResponseEntity.ok(new ApiResDto<>(true, null, "ORDER_REJECTED"));
+  @PatchMapping("/staff/orders/{orderId}/status")
+  public ResponseEntity<ApiResDto<Void>> updateStatus(
+      @PathVariable Long orderId, @RequestBody Map<String, String> request) {
+    try {
+      orderService.updateOrderStatus(orderId, request.get("status"));
+      return ResponseEntity.ok(new ApiResDto<>(true, null, "ORDER_STATUS_CHANGED"));
+    } catch (Exception e) {
+      return handleException(e);
+    }
   }
 
   @PatchMapping("/staff/calls/{callId}/resolve")
   public ResponseEntity<ApiResDto<Void>> resolveCall(
       @PathVariable Long callId, @RequestParam Long staffId) {
-    orderService.resolveCall(callId, staffId);
-    return ResponseEntity.ok(new ApiResDto<>(true, null, "CALL_RESOLVED"));
+    try {
+      orderService.resolveCall(callId, staffId);
+      return ResponseEntity.ok(new ApiResDto<>(true, null, "CALL_RESOLVED"));
+    } catch (Exception e) {
+      return handleException(e);
+    }
+  }
+
+  @DeleteMapping("/staff/orders/{orderId}")
+  public ResponseEntity<ApiResDto<Void>> rejectOrder(@PathVariable Long orderId) {
+    try {
+      orderService.rejectOrder(orderId);
+      return ResponseEntity.ok(new ApiResDto<>(true, null, "ORDER_REJECTED"));
+    } catch (Exception e) {
+      return handleException(e);
+    }
+  }
+
+  private <T> ResponseEntity<ApiResDto<T>> handleException(Exception e) {
+    String message = e.getMessage() != null ? e.getMessage() : "500 INTERNAL_SERVER_ERROR";
+
+    if (message.startsWith("404")) {
+      return new ResponseEntity<>(new ApiResDto<>(false, null, message), HttpStatus.NOT_FOUND);
+    }
+
+    if (message.startsWith("400")) {
+      return new ResponseEntity<>(new ApiResDto<>(false, null, message), HttpStatus.BAD_REQUEST);
+    }
+
+    return new ResponseEntity<>(new ApiResDto<>(false, null, message), HttpStatus.BAD_REQUEST);
   }
 }

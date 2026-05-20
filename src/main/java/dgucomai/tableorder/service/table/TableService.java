@@ -18,6 +18,7 @@ import dgucomai.tableorder.repository.table.StaffRepository;
 import dgucomai.tableorder.repository.table.TableRepository;
 import dgucomai.tableorder.repository.table.TableSessionRepository;
 import dgucomai.tableorder.sse.SseEmitterManager;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,6 +36,7 @@ public class TableService {
   private final StaffCallRepository staffCallRepository;
   private final OrdersRepository ordersRepository;
   private final SseEmitterManager sseEmitterManager;
+  private final EntityManager em;
 
   @Transactional(readOnly = true)
   public List<TableSummaryResDto> getAllTables() {
@@ -58,8 +60,7 @@ public class TableService {
                   } else if (staffCallRepository.existsBySessionIdAndCallTypeAndStatus(
                       session.getSessionId(), "STAFF", "REQUESTED")) {
                     calculatedStatus = TableStatus.STAFF_CALL;
-                  } else if (ordersRepository.existsBySessionIdAndPaymentStatus(
-                      session.getSessionId(), PaymentStatus.PENDING)) {
+                  } else if (hasPaymentPending(session.getSessionId())) {
                     calculatedStatus = TableStatus.PAYMENT_PENDING;
                   }
                 }
@@ -70,7 +71,6 @@ public class TableService {
         .collect(Collectors.toList());
   }
 
-  // 특정 테이블 조회 메서드
   @Transactional(readOnly = true)
   public TableDetailResDto getTableById(Long tableId) {
     Tables table =
@@ -87,16 +87,13 @@ public class TableService {
             .findById(table.getCurrentSessionId())
             .orElseThrow(() -> new EntityNotFoundException("현재 세션을 찾을 수 없습니다."));
 
-    // [대원칙] 세션 상태가 CLOSED 라면 무조건 빈 테이블 포맷 반환
     if (session.getStatus() == TableSessionStatus.CLOSED) {
       return TableDetailResDto.empty(table, session.getSessionId());
     }
 
-    // 실시간 주문 및 호출 내역 전역 조회
     List<Orders> dbOrders = ordersRepository.findBySessionId(session.getSessionId());
     List<StaffCall> dbCalls = staffCallRepository.findBySessionId(session.getSessionId());
 
-    // 실시간 테이블 화면 상태(tableStatus) 우선순위 연산
     TableStatus calculatedStatus = TableStatus.IN_USE;
 
     boolean hasDealerCall =
@@ -105,8 +102,9 @@ public class TableService {
     boolean hasStaffCall =
         dbCalls.stream()
             .anyMatch(c -> "STAFF".equals(c.getCallType()) && "REQUESTED".equals(c.getStatus()));
-    boolean hasPaymentPending =
-        dbOrders.stream().anyMatch(o -> o.getPaymentStatus() == PaymentStatus.PENDING);
+
+    boolean hasPaymentPending = hasPaymentPending(session.getSessionId());
+
     if (hasDealerCall) {
       calculatedStatus = TableStatus.DEALER_CALL;
     } else if (hasStaffCall) {
@@ -115,7 +113,6 @@ public class TableService {
       calculatedStatus = TableStatus.PAYMENT_PENDING;
     }
 
-    // 5-2. 총 금액 연산 (기존 프로젝트 OrderStatus 상태에 맞춰 REJECTED만 제외하도록 수정)
     int totalAmount =
         dbOrders.stream()
             .filter(o -> o.getOrderStatus() != OrderStatus.REJECTED)
@@ -147,7 +144,6 @@ public class TableService {
             .findById(tableId)
             .orElseThrow(() -> new EntityNotFoundException("테이블을 찾을 수 없습니다. ID: " + tableId));
 
-    // 추가 방어 코드 (손님 없을때)
     if (table.getCurrentSessionId() == null) {
       return TableDetailResDto.empty(table, null);
     }
@@ -183,5 +179,20 @@ public class TableService {
 
     sseEmitterManager.sendEventToStaff("TABLE_STATUS_CHANGED", tableId);
     return TableDetailResDto.empty(table, savedNewSession.getSessionId());
+  }
+
+  private boolean hasPaymentPending(Long sessionId) {
+    String jpql =
+        "SELECT COUNT(pr) FROM PaymentRequest pr "
+            + "JOIN pr.order o "
+            + "WHERE o.sessionId = :sessionId AND pr.paymentStatus = :status";
+
+    Long count =
+        em.createQuery(jpql, Long.class)
+            .setParameter("sessionId", sessionId)
+            .setParameter("status", PaymentStatus.PENDING)
+            .getSingleResult();
+
+    return count > 0;
   }
 }
