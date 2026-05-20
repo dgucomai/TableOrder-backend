@@ -1,4 +1,4 @@
-package dgucomai.tableorder.dto;
+package dgucomai.tableorder.dto.res;
 
 public record ApiResDto<T>(boolean success, T data, String message) {
 

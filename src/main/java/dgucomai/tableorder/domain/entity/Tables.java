@@ -12,7 +12,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "tables")
-public class TableEntity {
+public class Tables {
 
   @Id
   @Column(name = "table_id")

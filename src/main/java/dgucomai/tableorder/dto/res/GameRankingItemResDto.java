@@ -1,6 +1,6 @@
-package dgucomai.tableorder.dto;
+package dgucomai.tableorder.dto.res;
 
-import dgucomai.tableorder.domain.GameUsers;
+import dgucomai.tableorder.domain.entity.GameUsers;
 
 public record GameRankingItemResDto(
     int rank, Long userId, String nickname, String phoneLast4, int score) {
@@ -18,11 +18,9 @@ public record GameRankingItemResDto(
     if (phoneNumber == null) {
       return null;
     }
-
     if (phoneNumber.length() <= 4) {
       return phoneNumber;
     }
-
     return phoneNumber.substring(phoneNumber.length() - 4);
   }
 }

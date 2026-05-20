@@ -1,8 +1,8 @@
 package dgucomai.tableorder.controller;
 
-import dgucomai.tableorder.dto.ApiResDto;
-import dgucomai.tableorder.dto.MenuResDto;
-import dgucomai.tableorder.dto.SoldOutReqDto;
+import dgucomai.tableorder.dto.req.SoldOutReqDto;
+import dgucomai.tableorder.dto.res.ApiResDto;
+import dgucomai.tableorder.dto.res.MenuResDto;
 import dgucomai.tableorder.service.MenuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

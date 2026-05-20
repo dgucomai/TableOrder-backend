@@ -1,6 +1,6 @@
 package dgucomai.tableorder.controller;
 
-import dgucomai.tableorder.dto.TokenResDto;
+import dgucomai.tableorder.dto.res.TokenResDto;
 import dgucomai.tableorder.service.TokenService;
 import java.util.LinkedHashMap;
 import java.util.Map;

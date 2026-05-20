@@ -1,4 +1,4 @@
-package dgucomai.tableorder.domain;
+package dgucomai.tableorder.domain.entity;
 
 import dgucomai.tableorder.domain.enums.OrderStatus;
 import dgucomai.tableorder.domain.enums.PaymentStatus;

@@ -1,4 +1,4 @@
-package dgucomai.tableorder.domain;
+package dgucomai.tableorder.domain.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
