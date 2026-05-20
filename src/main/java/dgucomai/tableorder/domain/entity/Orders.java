@@ -1,7 +1,6 @@
 package dgucomai.tableorder.domain.entity;
 
 import dgucomai.tableorder.domain.enums.OrderStatus;
-import dgucomai.tableorder.domain.enums.PaymentStatus;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -31,13 +30,6 @@ public class Orders {
   @Enumerated(EnumType.STRING)
   @Column(name = "order_status", length = 20)
   private OrderStatus orderStatus;
-
-  private LocalDateTime checkedAt;
-  private Long checkedByStaffId;
-  private String checkedByStaffName;
-
-  @Column(name = "changed_by")
-  private Long changedBy;
 
   @Column(name = "total_amount")
   private int totalAmount;
