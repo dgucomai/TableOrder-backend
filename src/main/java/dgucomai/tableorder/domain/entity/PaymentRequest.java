@@ -16,8 +16,8 @@ public class PaymentRequest {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "payment_id")
-  private Long paymentId;
+  @Column(name = "payment_request_id")
+  private Long id;
 
   @Column(name = "order_id", nullable = false)
   private Long orderId;
@@ -25,6 +25,9 @@ public class PaymentRequest {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "order_id", insertable = false, updatable = false)
   private Orders order;
+
+  @Column(name = "amount", nullable = false)
+  private int amount;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "payment_status", length = 20)
@@ -39,8 +42,17 @@ public class PaymentRequest {
   @Column(name = "checked_by")
   private Long checkedBy;
 
-  public PaymentRequest(Long orderId) {
+  @Column(name = "session_id", nullable = false)
+  private Long sessionId;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "session_id", insertable = false, updatable = false)
+  private TableSession tableSession;
+
+  public PaymentRequest(Long orderId, Long sessionId, int amount) {
     this.orderId = orderId;
+    this.sessionId = sessionId;
+    this.amount = amount;
     this.paymentStatus = PaymentStatus.PENDING;
     this.requestedAt = LocalDateTime.now();
   }

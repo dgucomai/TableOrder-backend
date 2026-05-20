@@ -51,7 +51,8 @@ public class OrderService {
   }
 
   private void createPaymentRequest(Orders order) {
-    PaymentRequest paymentRequest = new PaymentRequest(order.getOrderId());
+    PaymentRequest paymentRequest =
+        new PaymentRequest(order.getOrderId(), order.getSessionId(), order.getTotalAmount());
     em.persist(paymentRequest);
   }
 
@@ -86,6 +87,8 @@ public class OrderService {
 
     Orders order = new Orders(tableId, tableSession.getSessionId(), 0);
 
+    int calculatedTotalAmount = 0;
+
     for (OrderCreateReqDto.OrderItemReqDto itemDto : dto.items()) {
       MenuItems menu =
           menuItemRepository
@@ -95,8 +98,13 @@ public class OrderService {
       if (menu.isSoldOut()) {
         throw new IllegalStateException("400 MENU_SOLD_OUT");
       }
+
       order.addOrderItem(new OrderItems(order, menu, itemDto.quantity()));
+
+      calculatedTotalAmount += menu.getPrice() * itemDto.quantity();
     }
+
+    order.setTotalAmount(calculatedTotalAmount);
 
     orderRepository.save(order);
     createPaymentRequest(order);
