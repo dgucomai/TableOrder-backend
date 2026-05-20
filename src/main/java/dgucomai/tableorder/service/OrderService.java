@@ -1,17 +1,12 @@
 package dgucomai.tableorder.service;
 
-import dgucomai.tableorder.domain.MenuItems;
-import dgucomai.tableorder.domain.OrderItems;
-import dgucomai.tableorder.domain.Orders;
-import dgucomai.tableorder.domain.StaffCall;
+import dgucomai.tableorder.domain.*;
 import dgucomai.tableorder.domain.enums.OrderStatus;
 import dgucomai.tableorder.dto.OrderCreateReqDto;
 import dgucomai.tableorder.dto.OrderResDto;
-import dgucomai.tableorder.repository.MenuItemRepository;
-import dgucomai.tableorder.repository.OrdersRepository;
-import dgucomai.tableorder.repository.StaffCallRepository;
+import dgucomai.tableorder.repository.*;
 import dgucomai.tableorder.sse.SseEmitterManager;
-import java.time.LocalDateTime;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,43 +20,55 @@ public class OrderService {
   private final MenuItemRepository menuItemRepository;
   private final StaffCallRepository staffCallRepository;
   private final SseEmitterManager sseEmitterManager;
+  private final EntityManager em;
+
+  private Object[] getValidTableInfo(String qrToken) {
+    return (Object[])
+        em.createQuery(
+                "SELECT t.tableId, t.currentSession.sessionId FROM Tables t WHERE t.qrToken = :qrToken")
+            .setParameter("qrToken", qrToken)
+            .getSingleResult();
+  }
 
   @Transactional
-  public void callStaff(Long tableId, Long sessionId) {
-    StaffCall staffCall = new StaffCall(tableId, sessionId, "STAFF", "직원 호출");
-    staffCallRepository.save(staffCall);
+  public void callStaff(String qrToken, String message) {
+    Object[] info = getValidTableInfo(qrToken);
+    Long tableId = (Long) info[0];
+    Long sessionId = (Long) info[1];
+
+    StaffCall call = new StaffCall(tableId, sessionId, "STAFF", message);
+    staffCallRepository.save(call);
     sseEmitterManager.sendEventToStaff("STAFF_CALL_CREATED", tableId);
   }
 
   @Transactional
-  public void callDealer(Long tableId, Long sessionId) {
-    StaffCall dealerCall = new StaffCall(tableId, sessionId, "DEALER", "딜러 호출");
-    staffCallRepository.save(dealerCall);
+  public void callDealer(String qrToken, String message) {
+    Object[] info = getValidTableInfo(qrToken);
+    Long tableId = (Long) info[0];
+    Long sessionId = (Long) info[1];
+
+    StaffCall call = new StaffCall(tableId, sessionId, "DEALER", message);
+    staffCallRepository.save(call);
     sseEmitterManager.sendEventToStaff("DEALER_CALL_CREATED", tableId);
   }
 
   @Transactional
   public OrderResDto createOrder(OrderCreateReqDto dto) {
-    int total = 0;
-    Orders order = new Orders(dto.tableId(), total);
+    Object[] info = getValidTableInfo(dto.qrToken());
+    Long tableId = (Long) info[0];
+    Long sessionId = (Long) info[1];
 
+    Orders order = new Orders(tableId, sessionId, 0);
     for (OrderCreateReqDto.OrderItemReqDto itemDto : dto.items()) {
       MenuItems menu =
           menuItemRepository
               .findById(itemDto.menuId())
-              .orElseThrow(() -> new IllegalArgumentException("메뉴를 찾을 수 없습니다."));
-      OrderItems orderItem = new OrderItems(order, menu, itemDto.quantity());
-      order.addOrderItem(orderItem);
+              .orElseThrow(() -> new IllegalArgumentException("메뉴 없음"));
+      order.addOrderItem(new OrderItems(order, menu, itemDto.quantity()));
     }
 
-    // 기본 주문 정보 기입 후 저장
-    order.setCompletedAt(LocalDateTime.now());
-
     orderRepository.save(order);
-
-    // 주점 관리자 화면(Staff용 웹)으로 주문 알림 SSE 발송
-    sseEmitterManager.sendEventToStaff("PAYMENT_REQUEST_CREATED", dto.tableId());
-
+    sseEmitterManager.sendEventToStaff("PAYMENT_REQUEST_CREATED", tableId);
     return OrderResDto.from(order);
   }
 
@@ -101,6 +108,7 @@ public class OrderService {
         orderRepository
             .findById(orderId)
             .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+
     order.updateStatus(status);
     sseEmitterManager.sendEventToStaff("ORDER_STATUS_CHANGED", order.getTableId());
   }
@@ -111,6 +119,7 @@ public class OrderService {
         staffCallRepository
             .findById(callId)
             .orElseThrow(() -> new IllegalArgumentException("호출 내역을 찾을 수 없습니다."));
+
     staffCall.resolve(staffId);
     sseEmitterManager.sendEventToStaff("CALL_RESOLVED", staffCall.getTableId());
   }
