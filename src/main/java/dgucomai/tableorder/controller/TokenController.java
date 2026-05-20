@@ -1,8 +1,8 @@
 package dgucomai.tableorder.controller;
 
 import dgucomai.tableorder.dto.req.TokenUpdateReqDto;
-import dgucomai.tableorder.dto.res.TokenUpdateResDto;
 import dgucomai.tableorder.dto.res.TokenResDto;
+import dgucomai.tableorder.dto.res.TokenUpdateResDto;
 import dgucomai.tableorder.service.TokenService;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -49,6 +49,4 @@ public class TokenController {
 
     return ResponseEntity.ok(customResponse);
   }
-
-
 }

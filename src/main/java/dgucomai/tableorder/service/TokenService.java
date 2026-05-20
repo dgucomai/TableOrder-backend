@@ -2,8 +2,8 @@ package dgucomai.tableorder.service;
 
 import dgucomai.tableorder.domain.entity.TableSession;
 import dgucomai.tableorder.domain.entity.Tables;
-import dgucomai.tableorder.dto.res.TokenUpdateResDto;
 import dgucomai.tableorder.dto.res.TokenResDto;
+import dgucomai.tableorder.dto.res.TokenUpdateResDto;
 import dgucomai.tableorder.exception.CustomException;
 import dgucomai.tableorder.exception.ErrorCode;
 import dgucomai.tableorder.repository.table.TableRepository;
