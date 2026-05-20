@@ -114,7 +114,6 @@ public class OrderService {
 
     order.updateStatus(newStatus);
     order.setCompletedAt(LocalDateTime.now());
-    order.setCheckedByStaffId(staffId);
 
     sseEmitterManager.sendEventToStaff("ORDER_STATUS_CHANGED", order.getTableId());
   }
