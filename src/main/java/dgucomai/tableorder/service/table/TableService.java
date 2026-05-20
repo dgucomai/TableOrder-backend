@@ -5,6 +5,7 @@ import dgucomai.tableorder.domain.entity.Staff;
 import dgucomai.tableorder.domain.entity.StaffCall;
 import dgucomai.tableorder.domain.entity.TableSession;
 import dgucomai.tableorder.domain.entity.Tables;
+import dgucomai.tableorder.domain.enums.OrderStatus;
 import dgucomai.tableorder.domain.enums.PaymentStatus;
 import dgucomai.tableorder.domain.enums.TableSessionStatus;
 import dgucomai.tableorder.domain.type.TableStatus;
@@ -16,6 +17,7 @@ import dgucomai.tableorder.repository.StaffCallRepository;
 import dgucomai.tableorder.repository.table.StaffRepository;
 import dgucomai.tableorder.repository.table.TableRepository;
 import dgucomai.tableorder.repository.table.TableSessionRepository;
+import dgucomai.tableorder.sse.SseEmitterManager;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,6 +34,7 @@ public class TableService {
   private final StaffRepository StaffRepository;
   private final StaffCallRepository staffCallRepository;
   private final OrdersRepository ordersRepository;
+  private final SseEmitterManager sseEmitterManager;
 
   @Transactional(readOnly = true)
   public List<TableSummaryResDto> getAllTables() {
@@ -58,7 +61,6 @@ public class TableService {
                   } else if (ordersRepository.existsBySessionIdAndPaymentStatus(
                       session.getSessionId(), PaymentStatus.PENDING)) {
                     calculatedStatus = TableStatus.PAYMENT_PENDING;
-                    calculatedStatus = TableStatus.DEALER_CALL;
                   }
                 }
               }
@@ -116,8 +118,7 @@ public class TableService {
     // 5-2. 총 금액 연산 (기존 프로젝트 OrderStatus 상태에 맞춰 REJECTED만 제외하도록 수정)
     int totalAmount =
         dbOrders.stream()
-            .filter(
-                o -> o.getOrderStatus() != dgucomai.tableorder.domain.enums.OrderStatus.REJECTED)
+            .filter(o -> o.getOrderStatus() != OrderStatus.REJECTED)
             .mapToInt(Orders::getTotalAmount)
             .sum();
 
@@ -173,14 +174,14 @@ public class TableService {
             .table(table)
             .status(TableSessionStatus.CLOSED)
             .tokenCount(0)
-            .startedAt(LocalDateTime.now())
+            .startedAt(null)
             .build();
     TableSession savedNewSession = tableSessionRepository.save(newSession);
 
     table.setCurrentSessionId(savedNewSession.getSessionId());
     tableRepository.save(table);
 
-    // 7. (참고) 이후 컨트롤러단 혹은 이벤트 리스너를 통해 TABLE_STATUS_CHANGED SSE를 발행해야 합니다.
+    sseEmitterManager.sendEventToStaff("TABLE_STATUS_CHANGED", tableId);
     return TableDetailResDto.empty(table, savedNewSession.getSessionId());
   }
 }
