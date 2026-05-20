@@ -6,7 +6,6 @@ import dgucomai.tableorder.domain.entity.StaffCall;
 import dgucomai.tableorder.domain.entity.TableSession;
 import dgucomai.tableorder.domain.entity.Tables;
 import dgucomai.tableorder.domain.enums.OrderStatus;
-import dgucomai.tableorder.domain.enums.PaymentStatus;
 import dgucomai.tableorder.domain.enums.TableSessionStatus;
 import dgucomai.tableorder.domain.type.TableStatus;
 import dgucomai.tableorder.dto.res.OrderResDto;
@@ -72,8 +71,8 @@ public class TableService {
                   } else if (staffCallRepository.existsBySessionIdAndCallTypeAndStatus(
                       session.getSessionId(), "STAFF", "REQUESTED")) {
                     calculatedStatus = TableStatus.STAFF_CALL;
-                  } else if (ordersRepository.existsBySessionIdAndPaymentStatus(
-                      session.getSessionId(), PaymentStatus.PENDING)) {
+                  } else if (ordersRepository.existsBySessionIdAndOrderStatus(
+                      session.getSessionId(), OrderStatus.PAYMENT_PENDING)) {
                     calculatedStatus = TableStatus.PAYMENT_PENDING;
                   }
                 }
@@ -120,7 +119,7 @@ public class TableService {
         dbCalls.stream()
             .anyMatch(c -> "STAFF".equals(c.getCallType()) && "REQUESTED".equals(c.getStatus()));
     boolean hasPaymentPending =
-        dbOrders.stream().anyMatch(o -> o.getPaymentStatus() == PaymentStatus.PENDING);
+        dbOrders.stream().anyMatch(o -> o.getOrderStatus() == OrderStatus.PAYMENT_PENDING);
     if (hasDealerCall) {
       calculatedStatus = TableStatus.DEALER_CALL;
     } else if (hasStaffCall) {
