@@ -23,8 +23,7 @@ public class TableController {
   }
 
   @GetMapping("/tables/{tableId}")
-  public ResponseEntity<ApiResDto<TableDetailResDto>> getTableById(
-      @PathVariable Long tableId) {
+  public ResponseEntity<ApiResDto<TableDetailResDto>> getTableById(@PathVariable Long tableId) {
     TableDetailResDto responseData = tableService.getTableById(tableId);
     return ResponseEntity.ok(ApiResDto.success(responseData));
   }

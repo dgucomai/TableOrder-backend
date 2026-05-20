@@ -1,7 +1,7 @@
 package dgucomai.tableorder.repository;
 
-import java.util.List;
 import dgucomai.tableorder.domain.entity.StaffCall;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface StaffCallRepository extends JpaRepository<StaffCall, Long> {

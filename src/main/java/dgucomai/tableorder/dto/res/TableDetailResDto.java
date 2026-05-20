@@ -1,8 +1,8 @@
 package dgucomai.tableorder.dto.res;
 
 import dgucomai.tableorder.domain.entity.TableSession;
-import dgucomai.tableorder.domain.enums.TableSessionStatus;
 import dgucomai.tableorder.domain.entity.Tables;
+import dgucomai.tableorder.domain.enums.TableSessionStatus;
 import dgucomai.tableorder.domain.type.TableStatus;
 import java.time.LocalDateTime;
 import java.util.List;
