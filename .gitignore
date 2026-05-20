@@ -40,3 +40,4 @@ out/
 
 ### Claude Code ###
 .claude/settings.local.json
+.omc/

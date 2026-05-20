@@ -1,4 +1,4 @@
-package dgucomai.tableorder.dto;
+package dgucomai.tableorder.dto.res;
 
 import java.util.List;
 

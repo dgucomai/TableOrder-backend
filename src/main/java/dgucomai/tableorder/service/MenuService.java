@@ -1,7 +1,7 @@
 package dgucomai.tableorder.service;
 
-import dgucomai.tableorder.domain.MenuItems;
-import dgucomai.tableorder.dto.MenuResDto;
+import dgucomai.tableorder.domain.entity.MenuItems;
+import dgucomai.tableorder.dto.res.MenuResDto;
 import dgucomai.tableorder.exception.CustomException;
 import dgucomai.tableorder.exception.ErrorCode;
 import dgucomai.tableorder.repository.MenuItemRepository;

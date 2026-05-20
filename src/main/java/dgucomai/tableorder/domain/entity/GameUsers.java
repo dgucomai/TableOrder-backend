@@ -1,4 +1,4 @@
-package dgucomai.tableorder.domain;
+package dgucomai.tableorder.domain.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -58,29 +58,12 @@ public class GameUsers {
       Integer rockPaperScissorsScore,
       Integer akoGrowingScore,
       Integer basketballScore) {
-    if (nickname != null) {
-      this.nickname = nickname;
-    }
-
-    if (phoneNumber != null) {
-      this.phoneNumber = phoneNumber;
-    }
-
-    if (flappyBirdScore != null) {
-      this.flappyBirdScore = flappyBirdScore;
-    }
-
-    if (rockPaperScissorsScore != null) {
-      this.rockPaperScissorsScore = rockPaperScissorsScore;
-    }
-
-    if (akoGrowingScore != null) {
-      this.akoGrowingScore = akoGrowingScore;
-    }
-
-    if (basketballScore != null) {
-      this.basketballScore = basketballScore;
-    }
+    if (nickname != null) this.nickname = nickname;
+    if (phoneNumber != null) this.phoneNumber = phoneNumber;
+    if (flappyBirdScore != null) this.flappyBirdScore = flappyBirdScore;
+    if (rockPaperScissorsScore != null) this.rockPaperScissorsScore = rockPaperScissorsScore;
+    if (akoGrowingScore != null) this.akoGrowingScore = akoGrowingScore;
+    if (basketballScore != null) this.basketballScore = basketballScore;
   }
 
   public int getScoreByGameIndex(int gameIndex) {

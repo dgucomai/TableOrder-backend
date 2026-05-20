@@ -1,4 +1,4 @@
-package dgucomai.tableorder.domain;
+package dgucomai.tableorder.domain.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -14,7 +14,7 @@ public class StaffCall {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "call_id")
-  private Long callId;
+  private Long id;
 
   @Column(name = "table_id", nullable = false)
   private Long tableId;

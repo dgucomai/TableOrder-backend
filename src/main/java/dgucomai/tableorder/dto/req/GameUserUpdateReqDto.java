@@ -1,4 +1,4 @@
-package dgucomai.tableorder.dto;
+package dgucomai.tableorder.dto.req;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 
