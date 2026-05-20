@@ -139,7 +139,7 @@ public class TableService {
             .map(
                 c ->
                     new TableDetailResponseDto.StaffCallResDto(
-                        c.getCallId(),
+                        c.getId(),
                         c.getCallType(),
                         c.getMessage(),
                         c.getStatus(),
