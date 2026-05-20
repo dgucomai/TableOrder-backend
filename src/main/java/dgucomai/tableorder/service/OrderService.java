@@ -52,7 +52,7 @@ public class OrderService {
 
   private void createPaymentRequest(Orders order) {
     PaymentRequest paymentRequest =
-        new PaymentRequest(order.getOrderId(), order.getSessionId(), order.getTotalAmount());
+        new PaymentRequest(order.getOrderId(), order.getSessionId(), order.getAmount());
     em.persist(paymentRequest);
   }
 
@@ -87,7 +87,7 @@ public class OrderService {
 
     Orders order = new Orders(tableId, tableSession.getSessionId(), 0);
 
-    int calculatedTotalAmount = 0;
+    int calculatedAmount = 0;
 
     for (OrderCreateReqDto.OrderItemReqDto itemDto : dto.items()) {
       MenuItems menu =
@@ -101,10 +101,10 @@ public class OrderService {
 
       order.addOrderItem(new OrderItems(order, menu, itemDto.quantity()));
 
-      calculatedTotalAmount += menu.getPrice() * itemDto.quantity();
+      calculatedAmount += menu.getPrice() * itemDto.quantity();
     }
 
-    order.setTotalAmount(calculatedTotalAmount);
+    order.setAmount(calculatedAmount);
 
     orderRepository.save(order);
     createPaymentRequest(order);
