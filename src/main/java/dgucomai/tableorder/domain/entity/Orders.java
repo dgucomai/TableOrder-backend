@@ -43,6 +43,9 @@ public class Orders {
   @Column(name = "completed_at")
   private LocalDateTime completedAt;
 
+  @Column(name = "checked_by_staff_id")
+  private Long checkedByStaffId;
+
   @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<OrderItems> orderItems = new ArrayList<>();
 
