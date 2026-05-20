@@ -4,6 +4,7 @@ import dgucomai.tableorder.domain.entity.*;
 import dgucomai.tableorder.domain.enums.OrderStatus;
 import dgucomai.tableorder.domain.enums.TableSessionStatus;
 import dgucomai.tableorder.dto.req.OrderCreateReqDto;
+import dgucomai.tableorder.dto.res.BillingResDto;
 import dgucomai.tableorder.dto.res.OrderResDto;
 import dgucomai.tableorder.repository.MenuItemRepository;
 import dgucomai.tableorder.repository.OrdersRepository;
@@ -52,6 +53,17 @@ public class OrderService {
   private void createPaymentRequest(Orders order) {
     PaymentRequest paymentRequest = new PaymentRequest(order.getOrderId());
     em.persist(paymentRequest);
+  }
+
+  public BillingResDto getBilling(String qrToken) {
+    Object[] info = getValidTableInfo(qrToken);
+    Long sessionId = (info[1] != null) ? ((Number) info[1]).longValue() : null;
+
+    if (sessionId == null) {
+      throw new IllegalArgumentException("404 TABLE_SESSION_NOT_FOUND");
+    }
+
+    return BillingResDto.from(orderRepository.findBySessionId(sessionId));
   }
 
   @Transactional

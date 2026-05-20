@@ -3,6 +3,7 @@ package dgucomai.tableorder.controller;
 import dgucomai.tableorder.dto.req.OrderCreateReqDto;
 import dgucomai.tableorder.dto.req.StaffCallReqDto;
 import dgucomai.tableorder.dto.res.ApiResDto;
+import dgucomai.tableorder.dto.res.BillingResDto;
 import dgucomai.tableorder.dto.res.OrderResDto;
 import dgucomai.tableorder.dto.res.TableNumResDto;
 import dgucomai.tableorder.service.OrderService;
@@ -20,6 +21,16 @@ public class OrderController {
 
   private final OrderService orderService;
   private final TableService tableService;
+
+  @GetMapping("/billing")
+  public ResponseEntity<ApiResDto<BillingResDto>> getBilling(@RequestParam String qt) {
+    try {
+      BillingResDto response = orderService.getBilling(qt);
+      return ResponseEntity.ok(ApiResDto.success(response));
+    } catch (Exception e) {
+      return handleException(e);
+    }
+  }
 
   @GetMapping("/qtnum")
   public ResponseEntity<ApiResDto<TableNumResDto>> getTableNumByQt(@RequestParam String qt) {
