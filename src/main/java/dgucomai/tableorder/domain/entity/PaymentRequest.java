@@ -33,13 +33,27 @@ public class PaymentRequest {
   @Column(name = "requested_at")
   private LocalDateTime requestedAt;
 
+  @Column(name = "checked_at")
+  private LocalDateTime checkedAt;
+
+  @Column(name = "checked_by")
+  private Long checkedBy;
+
   public PaymentRequest(Long orderId) {
     this.orderId = orderId;
     this.paymentStatus = PaymentStatus.PENDING;
     this.requestedAt = LocalDateTime.now();
   }
 
-  public void approve() {
+  public void approve(Long staffId) {
     this.paymentStatus = PaymentStatus.APPROVED;
+    this.checkedAt = LocalDateTime.now();
+    this.checkedBy = staffId;
+  }
+
+  public void reject(Long staffId) {
+    this.paymentStatus = PaymentStatus.REJECTED;
+    this.checkedAt = LocalDateTime.now();
+    this.checkedBy = staffId;
   }
 }

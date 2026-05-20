@@ -128,7 +128,7 @@ public class OrderService {
   }
 
   @Transactional
-  public void approveOrder(Long orderId) {
+  public void approveOrder(Long orderId, Long staffId) {
     Orders order =
         orderRepository
             .findById(orderId)
@@ -147,7 +147,7 @@ public class OrderService {
                   PaymentRequest.class)
               .setParameter("orderId", orderId)
               .getSingleResult();
-      paymentRequest.approve();
+      paymentRequest.approve(staffId);
     } catch (NoResultException e) {
     }
 
@@ -166,7 +166,7 @@ public class OrderService {
   }
 
   @Transactional
-  public void rejectOrder(Long orderId) {
+  public void rejectOrder(Long orderId, Long staffId) {
     Orders order =
         orderRepository
             .findById(orderId)
@@ -177,6 +177,18 @@ public class OrderService {
     }
 
     order.updateStatus(OrderStatus.REJECTED);
+
+    try {
+      PaymentRequest paymentRequest =
+          em.createQuery(
+                  "SELECT pr FROM PaymentRequest pr WHERE pr.orderId = :orderId",
+                  PaymentRequest.class)
+              .setParameter("orderId", orderId)
+              .getSingleResult();
+      paymentRequest.reject(staffId);
+    } catch (NoResultException e) {
+    }
+
     sseEmitterManager.sendEventToStaff("ORDER_REJECTED", order.getTableId());
   }
 

@@ -67,9 +67,10 @@ public class OrderController {
   }
 
   @PatchMapping("/staff/orders/{orderId}/approve")
-  public ResponseEntity<ApiResDto<Void>> approveOrder(@PathVariable Long orderId) {
+  public ResponseEntity<ApiResDto<Void>> approveOrder(
+      @PathVariable Long orderId, @RequestParam Long staffId) {
     try {
-      orderService.approveOrder(orderId);
+      orderService.approveOrder(orderId, staffId);
       return ResponseEntity.ok(new ApiResDto<>(true, null, "ORDER_APPROVED"));
     } catch (Exception e) {
       return handleException(e);
@@ -99,9 +100,10 @@ public class OrderController {
   }
 
   @DeleteMapping("/staff/orders/{orderId}")
-  public ResponseEntity<ApiResDto<Void>> rejectOrder(@PathVariable Long orderId) {
+  public ResponseEntity<ApiResDto<Void>> rejectOrder(
+      @PathVariable Long orderId, @RequestParam Long staffId) {
     try {
-      orderService.rejectOrder(orderId);
+      orderService.rejectOrder(orderId, staffId);
       return ResponseEntity.ok(new ApiResDto<>(true, null, "ORDER_REJECTED"));
     } catch (Exception e) {
       return handleException(e);
