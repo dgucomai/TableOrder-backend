@@ -1,9 +1,9 @@
 package dgucomai.tableorder.controller;
 
-import dgucomai.tableorder.dto.ApiResDto;
-import dgucomai.tableorder.dto.OrderCreateReqDto;
-import dgucomai.tableorder.dto.OrderResDto;
-import dgucomai.tableorder.dto.StaffCallReqDto;
+import dgucomai.tableorder.dto.req.OrderCreateReqDto;
+import dgucomai.tableorder.dto.req.StaffCallReqDto;
+import dgucomai.tableorder.dto.res.ApiResDto;
+import dgucomai.tableorder.dto.res.OrderResDto;
 import dgucomai.tableorder.service.OrderService;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;

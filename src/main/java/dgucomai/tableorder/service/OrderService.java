@@ -1,10 +1,15 @@
 package dgucomai.tableorder.service;
 
-import dgucomai.tableorder.domain.*;
+import dgucomai.tableorder.domain.entity.MenuItems;
+import dgucomai.tableorder.domain.entity.OrderItems;
+import dgucomai.tableorder.domain.entity.Orders;
+import dgucomai.tableorder.domain.entity.StaffCall;
 import dgucomai.tableorder.domain.enums.OrderStatus;
-import dgucomai.tableorder.dto.OrderCreateReqDto;
-import dgucomai.tableorder.dto.OrderResDto;
-import dgucomai.tableorder.repository.*;
+import dgucomai.tableorder.dto.req.OrderCreateReqDto;
+import dgucomai.tableorder.dto.res.OrderResDto;
+import dgucomai.tableorder.repository.MenuItemRepository;
+import dgucomai.tableorder.repository.OrdersRepository;
+import dgucomai.tableorder.repository.StaffCallRepository;
 import dgucomai.tableorder.sse.SseEmitterManager;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +30,7 @@ public class OrderService {
   private Object[] getValidTableInfo(String qrToken) {
     return (Object[])
         em.createQuery(
-                "SELECT t.tableId, t.currentSession.sessionId FROM Tables t WHERE t.qrToken = :qrToken")
+                "SELECT t.tableId, t.currentSessionId FROM Tables t WHERE t.qrToken = :qrToken")
             .setParameter("qrToken", qrToken)
             .getSingleResult();
   }

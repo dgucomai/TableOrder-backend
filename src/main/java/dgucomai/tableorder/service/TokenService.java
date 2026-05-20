@@ -1,8 +1,8 @@
 package dgucomai.tableorder.service;
 
-import dgucomai.tableorder.domain.entity.TableEntity;
 import dgucomai.tableorder.domain.entity.TableSession;
-import dgucomai.tableorder.dto.TokenResDto;
+import dgucomai.tableorder.domain.entity.Tables;
+import dgucomai.tableorder.dto.res.TokenResDto;
 import dgucomai.tableorder.exception.CustomException;
 import dgucomai.tableorder.exception.ErrorCode;
 import dgucomai.tableorder.repository.table.TableRepository;
@@ -20,7 +20,7 @@ public class TokenService {
   private final TableSessionRepository tableSessionRepository;
 
   public TokenResDto getTokenCount(Long tableId) {
-    TableEntity table =
+    Tables table =
         tableRepository
             .findById(tableId)
             .orElseThrow(() -> new CustomException(ErrorCode.TABLE_NOT_FOUND));

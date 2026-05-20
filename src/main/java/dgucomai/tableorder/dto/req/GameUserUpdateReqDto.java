@@ -1,4 +1,4 @@
-package dgucomai.tableorder.dto;
+package dgucomai.tableorder.dto.req;
 
 public record GameUserUpdateReqDto(
     String nickname,
