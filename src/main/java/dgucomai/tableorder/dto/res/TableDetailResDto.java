@@ -2,28 +2,56 @@ package dgucomai.tableorder.dto.res;
 
 import dgucomai.tableorder.domain.entity.TableSession;
 import dgucomai.tableorder.domain.entity.Tables;
+import dgucomai.tableorder.domain.enums.TableSessionStatus;
 import dgucomai.tableorder.domain.type.TableStatus;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record TableDetailResDto(
     Long tableId,
     Integer tableNumber,
-    TableStatus status,
     Long sessionId,
-    TableStatus sessionStatus,
+    TableStatus tableStatus,
+    TableSessionStatus sessionStatus,
+    Integer tokenAmount,
+    Integer tokenCount,
     LocalDateTime startedAt,
-    String qrToken,
-    LocalDateTime createdAt) {
-
-  public static TableDetailResDto from(Tables table, TableSession session) {
+    List<OrderResDto> orders,
+    List<StaffCallResDto> calls) {
+  public static TableDetailResDto of(
+      Tables table,
+      TableSession session,
+      TableStatus calculatedStatus,
+      int totalAmount,
+      List<OrderResDto> orders,
+      List<StaffCallResDto> calls) {
     return new TableDetailResDto(
         table.getTableId(),
         table.getTableNumber(),
-        table.getStatus(),
         session != null ? session.getSessionId() : null,
-        session != null ? session.getStatus() : null,
+        calculatedStatus,
+        session != null ? session.getStatus() : TableSessionStatus.CLOSED,
+        totalAmount,
+        session != null ? session.getTokenCount() : 0,
         session != null ? session.getStartedAt() : null,
-        table.getQrToken(),
-        table.getCreatedAt());
+        orders,
+        calls);
   }
+
+  public static TableDetailResDto empty(Tables table, Long sessionId) {
+    return new TableDetailResDto(
+        table.getTableId(),
+        table.getTableNumber(),
+        sessionId,
+        TableStatus.EMPTY,
+        TableSessionStatus.CLOSED,
+        0,
+        0,
+        null,
+        List.of(),
+        List.of());
+  }
+
+  public record StaffCallResDto(
+      Long callId, String callType, String message, String status, LocalDateTime createdAt) {}
 }
