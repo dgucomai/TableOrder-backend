@@ -3,6 +3,7 @@ package dgucomai.tableorder.service;
 import dgucomai.tableorder.domain.entity.GameUsers;
 import dgucomai.tableorder.domain.entity.TableSession;
 import dgucomai.tableorder.domain.entity.Tables;
+import dgucomai.tableorder.domain.enums.TableSessionStatus;
 import dgucomai.tableorder.dto.req.GameUserCreateReqDto;
 import dgucomai.tableorder.dto.req.GameUserUpdateReqDto;
 import dgucomai.tableorder.dto.res.GameRankingItemResDto;
@@ -45,9 +46,9 @@ public class GameUserService {
       currentSession = tableSessionRepository.findById(table.getCurrentSessionId()).orElse(null);
     }
 
-    // if (currentSession == null || currentSession.getStatus() == TableStatus.EMPTY) {
-    // throw new GameApiException(HttpStatus.NOT_FOUND, "현재 활성화된 테이블 세션을 찾을 수 없습니다.");
-    // }
+    if (currentSession == null || currentSession.getStatus() != TableSessionStatus.ACTIVE) {
+      throw new GameApiException(HttpStatus.NOT_FOUND, "현재 활성화된 테이블 세션을 찾을 수 없습니다.");
+    }
 
     GameUsers gameUsers =
         new GameUsers(currentSession.getSessionId(), request.nickname(), request.phoneNumber());
@@ -97,6 +98,26 @@ public class GameUserService {
     }
 
     return new GameRankingListResDto(getGameName(game), rankings);
+  }
+
+  private TableSession getActiveSession(Tables table) {
+    Long currentSessionId = table.getCurrentSessionId();
+
+    if (currentSessionId == null) {
+      throw new GameApiException(HttpStatus.NOT_FOUND, "현재 활성화된 테이블 세션을 찾을 수 없습니다.");
+    }
+
+    TableSession currentSession =
+        tableSessionRepository
+            .findById(currentSessionId)
+            .orElseThrow(
+                () -> new GameApiException(HttpStatus.NOT_FOUND, "현재 활성화된 테이블 세션을 찾을 수 없습니다."));
+
+    if (currentSession.getStatus() != TableSessionStatus.ACTIVE) {
+      throw new GameApiException(HttpStatus.NOT_FOUND, "현재 활성화된 테이블 세션을 찾을 수 없습니다.");
+    }
+
+    return currentSession;
   }
 
   private List<GameUsers> findTop5ByGameIndex(int game) {

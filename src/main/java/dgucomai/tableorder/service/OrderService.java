@@ -1,11 +1,6 @@
 package dgucomai.tableorder.service;
 
-import dgucomai.tableorder.domain.entity.MenuItems;
-import dgucomai.tableorder.domain.entity.OrderItems;
-import dgucomai.tableorder.domain.entity.Orders;
-import dgucomai.tableorder.domain.entity.PaymentRequest;
-import dgucomai.tableorder.domain.entity.StaffCall;
-import dgucomai.tableorder.domain.entity.TableSession;
+import dgucomai.tableorder.domain.entity.*;
 import dgucomai.tableorder.domain.enums.OrderStatus;
 import dgucomai.tableorder.domain.enums.TableSessionStatus;
 import dgucomai.tableorder.dto.req.OrderCreateReqDto;
@@ -137,13 +132,13 @@ public class OrderService {
     Orders order =
         orderRepository
             .findById(orderId)
-            .orElseThrow(() -> new IllegalArgumentException("404 ORDER_NOT_FOUND"));
+            .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
     if (order.getOrderStatus() != OrderStatus.PAYMENT_PENDING) {
-      throw new IllegalStateException("400 INVALID_ORDER_STATUS");
+      throw new IllegalStateException("입금 대기 중인 주문만 승인 가능합니다.");
     }
 
-    order.updateStatus("COOKING");
+    order.updateStatus(OrderStatus.COOKING);
 
     try {
       PaymentRequest paymentRequest =
@@ -166,7 +161,7 @@ public class OrderService {
             .findById(orderId)
             .orElseThrow(() -> new IllegalArgumentException("404 ORDER_NOT_FOUND"));
 
-    order.updateStatus(status);
+    order.updateStatus(OrderStatus.valueOf(status.toUpperCase()));
     sseEmitterManager.sendEventToStaff("ORDER_STATUS_CHANGED", order.getTableId());
   }
 
@@ -175,13 +170,13 @@ public class OrderService {
     Orders order =
         orderRepository
             .findById(orderId)
-            .orElseThrow(() -> new IllegalArgumentException("404 ORDER_NOT_FOUND"));
+            .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
     if (order.getOrderStatus() != OrderStatus.PAYMENT_PENDING) {
-      throw new IllegalStateException("400 INVALID_ORDER_STATUS");
+      throw new IllegalStateException("입금 대기 중인 주문만 반려 가능합니다.");
     }
 
-    order.updateStatus("REJECTED");
+    order.updateStatus(OrderStatus.REJECTED);
     sseEmitterManager.sendEventToStaff("ORDER_REJECTED", order.getTableId());
   }
 
@@ -190,7 +185,7 @@ public class OrderService {
     StaffCall staffCall =
         staffCallRepository
             .findById(callId)
-            .orElseThrow(() -> new IllegalArgumentException("404 CALL_NOT_FOUND"));
+            .orElseThrow(() -> new IllegalArgumentException("호출 내역을 찾을 수 없습니다."));
 
     staffCall.resolve(staffId);
     sseEmitterManager.sendEventToStaff("CALL_RESOLVED", staffCall.getTableId());

@@ -43,6 +43,9 @@ public class Orders {
   @Column(name = "completed_at")
   private LocalDateTime completedAt;
 
+  @Column(name = "checked_by_staff_id")
+  private Long checkedByStaffId;
+
   @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<OrderItems> orderItems = new ArrayList<>();
 
@@ -61,8 +64,8 @@ public class Orders {
     this.orderItems.add(orderItems);
   }
 
-  public void updateStatus(String status) {
-    this.orderStatus = OrderStatus.valueOf(status.toUpperCase());
+  public void updateStatus(OrderStatus status) {
+    this.orderStatus = status;
 
     if (this.orderStatus == OrderStatus.COOKING) {
       this.approvedAt = LocalDateTime.now();
