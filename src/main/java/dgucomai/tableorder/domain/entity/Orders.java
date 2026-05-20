@@ -32,10 +32,6 @@ public class Orders {
   @Column(name = "order_status", length = 20)
   private OrderStatus orderStatus;
 
-  @Enumerated(EnumType.STRING)
-  @Column(name = "payment_status", length = 20)
-  private PaymentStatus paymentStatus;
-
   private LocalDateTime checkedAt;
   private Long checkedByStaffId;
   private String checkedByStaffName;
@@ -62,7 +58,6 @@ public class Orders {
     this.tableId = tableId;
     this.sessionId = sessionId;
     this.orderStatus = OrderStatus.PAYMENT_PENDING;
-    this.paymentStatus = PaymentStatus.PENDING;
     this.totalAmount = totalAmount;
     this.createdAt = LocalDateTime.now();
   }
@@ -76,7 +71,6 @@ public class Orders {
 
     if (this.orderStatus == OrderStatus.COOKING) {
       this.approvedAt = LocalDateTime.now();
-      this.paymentStatus = PaymentStatus.APPROVED;
     } else if (this.orderStatus == OrderStatus.COMPLETED
         || this.orderStatus == OrderStatus.CANCELLED) {
       this.completedAt = LocalDateTime.now();
