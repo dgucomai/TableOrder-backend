@@ -17,12 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AdminController {
 
-    private final StaffService staffService;
+  private final StaffService staffService;
 
-    @PostMapping("/staff/login")
-    public ResponseEntity<ApiResDto<StaffLoginResDto>> staffLogin(
-            @Valid @RequestBody StaffLoginReqDto staffLoginReqDto
-    ){
-        return ResponseEntity.ok(ApiResDto.success(staffService.staffLogin(staffLoginReqDto)));
-    }
+  @PostMapping("/staff/login")
+  public ResponseEntity<ApiResDto<StaffLoginResDto>> staffLogin(
+      @Valid @RequestBody StaffLoginReqDto staffLoginReqDto) {
+    return ResponseEntity.ok(ApiResDto.success(staffService.staffLogin(staffLoginReqDto)));
+  }
 }

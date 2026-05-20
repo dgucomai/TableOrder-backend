@@ -15,16 +15,18 @@ import org.springframework.stereotype.Service;
 @Transactional
 public class StaffService {
 
-    private final StaffRepository staffRepository;
+  private final StaffRepository staffRepository;
 
-    public StaffLoginResDto staffLogin(StaffLoginReqDto staffLoginReqDto){
-        Staff staff = staffRepository.findByStaffName(staffLoginReqDto.name())
-                .orElseThrow(() -> new CustomException(ErrorCode.STAFF_NOT_FOUND));
+  public StaffLoginResDto staffLogin(StaffLoginReqDto staffLoginReqDto) {
+    Staff staff =
+        staffRepository
+            .findByStaffName(staffLoginReqDto.name())
+            .orElseThrow(() -> new CustomException(ErrorCode.STAFF_NOT_FOUND));
 
-        if(!staff.getPassword().equals(staffLoginReqDto.password())){
-            throw new CustomException(ErrorCode.INVALID_STAFF_PASSWORD);
-        }
-
-        return new StaffLoginResDto(staff.getStaffName(),staff.getPassword());
+    if (!staff.getPassword().equals(staffLoginReqDto.password())) {
+      throw new CustomException(ErrorCode.INVALID_STAFF_PASSWORD);
     }
+
+    return new StaffLoginResDto(staff.getStaffName(), staff.getPassword());
+  }
 }
