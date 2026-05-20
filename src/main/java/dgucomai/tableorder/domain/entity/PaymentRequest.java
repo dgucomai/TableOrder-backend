@@ -16,7 +16,7 @@ public class PaymentRequest {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "payment_request_id")
+  @Column(name = "payment_id")
   private Long id;
 
   @Column(name = "order_id", nullable = false)
