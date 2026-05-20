@@ -78,7 +78,7 @@ public class Orders {
       this.approvedAt = LocalDateTime.now();
       this.paymentStatus = PaymentStatus.APPROVED;
     } else if (this.orderStatus == OrderStatus.COMPLETED
-            || this.orderStatus == OrderStatus.CANCELLED) {
+        || this.orderStatus == OrderStatus.CANCELLED) {
       this.completedAt = LocalDateTime.now();
     }
   }

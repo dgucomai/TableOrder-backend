@@ -8,7 +8,6 @@ import dgucomai.tableorder.repository.MenuItemRepository;
 import dgucomai.tableorder.repository.OrdersRepository;
 import dgucomai.tableorder.repository.StaffCallRepository;
 import dgucomai.tableorder.repository.table.TableRepository;
-import dgucomai.tableorder.repository.table.TableSessionRepository;
 import dgucomai.tableorder.sse.SseEmitterManager;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +43,8 @@ public class OrderService {
   public OrderResDto createOrder(OrderCreateReqDto dto) {
     int total = 0;
 
-    Tables table = tableRepository
+    Tables table =
+        tableRepository
             .findByQrToken(dto.qrToken())
             .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 QR 토큰입니다."));
 
@@ -54,9 +54,9 @@ public class OrderService {
 
     for (OrderCreateReqDto.OrderItemReqDto itemDto : dto.items()) {
       MenuItems menu =
-              menuItemRepository
-                      .findById(itemDto.menuId())
-                      .orElseThrow(() -> new IllegalArgumentException("메뉴를 찾을 수 없습니다."));
+          menuItemRepository
+              .findById(itemDto.menuId())
+              .orElseThrow(() -> new IllegalArgumentException("메뉴를 찾을 수 없습니다."));
       OrderItems orderItem = new OrderItems(order, menu, itemDto.quantity());
       order.addOrderItem(orderItem);
     }
@@ -106,9 +106,9 @@ public class OrderService {
   @Transactional
   public void updateOrderStatus(Long orderId, String status, Long staffId) {
     Orders order =
-            orderRepository
-                    .findById(orderId)
-                    .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+        orderRepository
+            .findById(orderId)
+            .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
     OrderStatus newStatus = OrderStatus.valueOf(status.toUpperCase());
 
