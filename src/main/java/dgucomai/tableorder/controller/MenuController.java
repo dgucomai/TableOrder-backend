@@ -1,6 +1,6 @@
 package dgucomai.tableorder.controller;
 
-import dgucomai.tableorder.dto.MenuResDto;
+import dgucomai.tableorder.dto.res.MenuResDto;
 import dgucomai.tableorder.service.MenuService;
 import java.util.LinkedHashMap;
 import java.util.List;

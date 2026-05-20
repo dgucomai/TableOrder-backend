@@ -1,15 +1,13 @@
-package dgucomai.tableorder.domain.response.table;
+package dgucomai.tableorder.dto.res;
 
-import dgucomai.tableorder.domain.entity.TableEntity;
 import dgucomai.tableorder.domain.entity.TableSession;
 import dgucomai.tableorder.domain.enums.TableSessionStatus;
+import dgucomai.tableorder.domain.entity.Tables;
 import dgucomai.tableorder.domain.type.TableStatus;
-import dgucomai.tableorder.dto.OrderResDto;
 import java.time.LocalDateTime;
 import java.util.List;
 
-// 전체 테이블 조회할때 응답으로 돌려줄 데이터 형식
-public record TableDetailResponseDto(
+public record TableDetailResDto(
     Long tableId,
     Integer tableNumber,
     Long sessionId,
@@ -20,15 +18,14 @@ public record TableDetailResponseDto(
     LocalDateTime startedAt,
     List<OrderResDto> orders,
     List<StaffCallResDto> calls) {
-  // form 메서드 : TableEntity를 TableSummaryResponseDto로 변환하는 메서드
-  public static TableDetailResponseDto of(
-      TableEntity table,
+  public static TableDetailResDto of(
+      Tables table,
       TableSession session,
       TableStatus calculatedStatus,
       int totalAmount,
       List<OrderResDto> orders,
       List<StaffCallResDto> calls) {
-    return new TableDetailResponseDto(
+    return new TableDetailResDto(
         table.getTableId(),
         table.getTableNumber(),
         session != null ? session.getSessionId() : null,
@@ -41,8 +38,8 @@ public record TableDetailResponseDto(
         calls);
   }
 
-  public static TableDetailResponseDto empty(TableEntity table, Long sessionId) {
-    return new TableDetailResponseDto(
+  public static TableDetailResDto empty(Tables table, Long sessionId) {
+    return new TableDetailResDto(
         table.getTableId(),
         table.getTableNumber(),
         sessionId,

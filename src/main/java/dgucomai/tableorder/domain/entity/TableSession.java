@@ -21,7 +21,7 @@ public class TableSession {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "table_id")
-  private TableEntity table;
+  private Tables table;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "cleared_by")

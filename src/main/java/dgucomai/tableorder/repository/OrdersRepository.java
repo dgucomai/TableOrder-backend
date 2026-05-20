@@ -1,8 +1,8 @@
 package dgucomai.tableorder.repository;
 
-import dgucomai.tableorder.domain.Orders;
 import dgucomai.tableorder.domain.enums.PaymentStatus;
 import java.util.List;
+import dgucomai.tableorder.domain.entity.Orders;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

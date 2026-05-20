@@ -1,6 +1,6 @@
 package dgucomai.tableorder.repository;
 
-import dgucomai.tableorder.domain.MenuItems;
+import dgucomai.tableorder.domain.entity.MenuItems;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
