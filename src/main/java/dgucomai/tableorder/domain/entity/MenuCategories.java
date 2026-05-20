@@ -1,4 +1,4 @@
-package dgucomai.tableorder.domain;
+package dgucomai.tableorder.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class MenuCategories {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "category_id")

@@ -1,12 +1,12 @@
 package dgucomai.tableorder.controller;
 
-import dgucomai.tableorder.dto.ApiResDto;
-import dgucomai.tableorder.dto.GameRankingListResDto;
-import dgucomai.tableorder.dto.GameUserCreateReqDto;
-import dgucomai.tableorder.dto.GameUserCreateResDto;
-import dgucomai.tableorder.dto.GameUserResDto;
-import dgucomai.tableorder.dto.GameUserUpdateReqDto;
-import dgucomai.tableorder.dto.GameUserUpdateResDto;
+import dgucomai.tableorder.dto.req.GameUserCreateReqDto;
+import dgucomai.tableorder.dto.req.GameUserUpdateReqDto;
+import dgucomai.tableorder.dto.res.ApiResDto;
+import dgucomai.tableorder.dto.res.GameRankingListResDto;
+import dgucomai.tableorder.dto.res.GameUserCreateResDto;
+import dgucomai.tableorder.dto.res.GameUserResDto;
+import dgucomai.tableorder.dto.res.GameUserUpdateResDto;
 import dgucomai.tableorder.service.GameUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -3,7 +3,7 @@ package dgucomai.tableorder.domain.enums;
 public enum OrderStatus {
   PAYMENT_PENDING,
   REJECTED,
-  CANCELLED,
+  COOKING,
   COMPLETED,
-  COOKING
+  CANCELLED
 }

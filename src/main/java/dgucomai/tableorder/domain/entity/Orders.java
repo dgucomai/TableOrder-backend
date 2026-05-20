@@ -1,6 +1,7 @@
-package dgucomai.tableorder.domain;
+package dgucomai.tableorder.domain.entity;
 
 import dgucomai.tableorder.domain.enums.OrderStatus;
+import dgucomai.tableorder.domain.enums.PaymentStatus;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -21,15 +22,23 @@ public class Orders {
   @Column(name = "order_id")
   private Long orderId;
 
-  @Column(name = "session_id")
-  private Long sessionId;
-
   @Column(name = "table_id")
   private Long tableId;
+
+  @Column(name = "session_id")
+  private Long sessionId;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "order_status", length = 20)
   private OrderStatus orderStatus;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "payment_status", length = 20)
+  private PaymentStatus paymentStatus;
+
+  private LocalDateTime checkedAt;
+  private Long checkedByStaffId;
+  private String checkedByStaffName;
 
   @Column(name = "changed_by")
   private Long changedBy;
@@ -49,10 +58,11 @@ public class Orders {
   @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<OrderItems> orderItems = new ArrayList<>();
 
-  public Orders(Long sessionId, Long tableId, int totalAmount) {
-    this.sessionId = sessionId;
+  public Orders(Long tableId, Long sessionId, int totalAmount) {
     this.tableId = tableId;
+    this.sessionId = sessionId;
     this.orderStatus = OrderStatus.PAYMENT_PENDING;
+    this.paymentStatus = PaymentStatus.PENDING;
     this.totalAmount = totalAmount;
     this.createdAt = LocalDateTime.now();
   }
@@ -61,13 +71,14 @@ public class Orders {
     this.orderItems.add(orderItems);
   }
 
-  public void updateStatus(OrderStatus status, Long staffId) {
-    this.orderStatus = status;
-    this.changedBy = staffId;
+  public void updateStatus(String status) {
+    this.orderStatus = OrderStatus.valueOf(status.toUpperCase());
 
     if (this.orderStatus == OrderStatus.COOKING) {
       this.approvedAt = LocalDateTime.now();
-    } else if (this.orderStatus == OrderStatus.COMPLETED) {
+      this.paymentStatus = PaymentStatus.APPROVED;
+    } else if (this.orderStatus == OrderStatus.COMPLETED
+        || this.orderStatus == OrderStatus.CANCELLED) {
       this.completedAt = LocalDateTime.now();
     }
   }

@@ -1,6 +1,6 @@
-package dgucomai.tableorder.dto;
+package dgucomai.tableorder.dto.res;
 
-import dgucomai.tableorder.domain.Orders;
+import dgucomai.tableorder.domain.entity.Orders;
 import java.time.LocalDateTime;
 import java.util.List;
 

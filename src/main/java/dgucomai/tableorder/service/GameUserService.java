@@ -1,19 +1,20 @@
 package dgucomai.tableorder.service;
 
-import dgucomai.tableorder.domain.GameUsers;
-import dgucomai.tableorder.domain.TableSessions;
-import dgucomai.tableorder.domain.Tables;
-import dgucomai.tableorder.domain.enums.TableSessionStatus;
-import dgucomai.tableorder.dto.GameRankingItemResDto;
-import dgucomai.tableorder.dto.GameRankingListResDto;
-import dgucomai.tableorder.dto.GameUserCreateReqDto;
-import dgucomai.tableorder.dto.GameUserCreateResDto;
-import dgucomai.tableorder.dto.GameUserResDto;
-import dgucomai.tableorder.dto.GameUserUpdateReqDto;
-import dgucomai.tableorder.dto.GameUserUpdateResDto;
+import dgucomai.tableorder.domain.entity.GameUsers;
+import dgucomai.tableorder.domain.entity.TableSession;
+import dgucomai.tableorder.domain.entity.Tables;
+import dgucomai.tableorder.domain.type.TableStatus;
+import dgucomai.tableorder.dto.req.GameUserCreateReqDto;
+import dgucomai.tableorder.dto.req.GameUserUpdateReqDto;
+import dgucomai.tableorder.dto.res.GameRankingItemResDto;
+import dgucomai.tableorder.dto.res.GameRankingListResDto;
+import dgucomai.tableorder.dto.res.GameUserCreateResDto;
+import dgucomai.tableorder.dto.res.GameUserResDto;
+import dgucomai.tableorder.dto.res.GameUserUpdateResDto;
 import dgucomai.tableorder.exception.GameApiException;
-import dgucomai.tableorder.repository.GameTableRepository;
 import dgucomai.tableorder.repository.GameUserRepository;
+import dgucomai.tableorder.repository.table.TableRepository;
+import dgucomai.tableorder.repository.table.TableSessionRepository;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -27,21 +28,25 @@ import org.springframework.transaction.annotation.Transactional;
 public class GameUserService {
 
   private final GameUserRepository gameUserRepository;
-  private final GameTableRepository gameTableRepository;
+  private final TableRepository tableRepository;
+  private final TableSessionRepository tableSessionRepository;
 
   @Transactional
   public GameUserCreateResDto createUser(GameUserCreateReqDto request) {
     validateCreateRequest(request);
 
     Tables table =
-        gameTableRepository
+        tableRepository
             .findByQrToken(request.qrToken())
             .orElseThrow(
                 () -> new GameApiException(HttpStatus.NOT_FOUND, "QR 토큰에 해당하는 테이블을 찾을 수 없습니다."));
 
-    TableSessions currentSession = table.getCurrentSession();
+    TableSession currentSession = null;
+    if (table.getCurrentSessionId() != null) {
+      currentSession = tableSessionRepository.findById(table.getCurrentSessionId()).orElse(null);
+    }
 
-    if (currentSession == null || currentSession.getStatus() != TableSessionStatus.ACTIVE) {
+    if (currentSession == null || currentSession.getStatus() == TableStatus.EMPTY) {
       throw new GameApiException(HttpStatus.NOT_FOUND, "현재 활성화된 테이블 세션을 찾을 수 없습니다.");
     }
 
