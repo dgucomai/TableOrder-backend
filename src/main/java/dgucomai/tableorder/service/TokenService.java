@@ -1,9 +1,9 @@
 package dgucomai.tableorder.service;
 
-import dgucomai.tableorder.domain.entity.TableEntity;
 import dgucomai.tableorder.domain.entity.TableSession;
-import dgucomai.tableorder.dto.TokenResDto;
-import dgucomai.tableorder.dto.TokenUpdateResDto;
+import dgucomai.tableorder.domain.entity.Tables;
+import dgucomai.tableorder.dto.res.TokenUpdateResDto;
+import dgucomai.tableorder.dto.res.TokenResDto;
 import dgucomai.tableorder.exception.CustomException;
 import dgucomai.tableorder.exception.ErrorCode;
 import dgucomai.tableorder.repository.table.TableRepository;
@@ -20,9 +20,8 @@ public class TokenService {
   private final TableRepository tableRepository;
   private final TableSessionRepository tableSessionRepository;
 
-  // [GET] 토큰 수 조회 (status 검사 완벽 제거됨)
   public TokenResDto getTokenCount(Long tableId) {
-    TableEntity table =
+    Tables table =
         tableRepository
             .findById(tableId)
             .orElseThrow(() -> new CustomException(ErrorCode.TABLE_NOT_FOUND));
@@ -49,7 +48,7 @@ public class TokenService {
       throw new CustomException(ErrorCode.INVALID_TOKEN_DELTA);
     }
 
-    TableEntity table =
+    Tables table =
         tableRepository
             .findById(tableId)
             .orElseThrow(() -> new CustomException(ErrorCode.TABLE_NOT_FOUND));

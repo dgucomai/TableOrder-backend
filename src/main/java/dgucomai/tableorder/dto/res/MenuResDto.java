@@ -1,6 +1,6 @@
-package dgucomai.tableorder.dto;
+package dgucomai.tableorder.dto.res;
 
-import dgucomai.tableorder.domain.MenuItems;
+import dgucomai.tableorder.domain.entity.MenuItems;
 
 public record MenuResDto(
     Long menuId,

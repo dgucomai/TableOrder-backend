@@ -1,6 +1,6 @@
 package dgucomai.tableorder.repository;
 
-import dgucomai.tableorder.domain.GameUsers;
+import dgucomai.tableorder.domain.entity.GameUsers;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
