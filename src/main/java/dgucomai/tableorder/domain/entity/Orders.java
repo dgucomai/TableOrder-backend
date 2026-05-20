@@ -71,14 +71,14 @@ public class Orders {
     this.orderItems.add(orderItems);
   }
 
-  public void updateStatus(String status) {
-    this.orderStatus = OrderStatus.valueOf(status.toUpperCase());
+  public void updateStatus(OrderStatus status) {
+    this.orderStatus = status;
 
     if (this.orderStatus == OrderStatus.COOKING) {
       this.approvedAt = LocalDateTime.now();
       this.paymentStatus = PaymentStatus.APPROVED;
     } else if (this.orderStatus == OrderStatus.COMPLETED
-        || this.orderStatus == OrderStatus.CANCELLED) {
+            || this.orderStatus == OrderStatus.CANCELLED) {
       this.completedAt = LocalDateTime.now();
     }
   }

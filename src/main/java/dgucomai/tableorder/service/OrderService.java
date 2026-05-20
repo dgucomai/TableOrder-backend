@@ -1,15 +1,14 @@
 package dgucomai.tableorder.service;
 
-import dgucomai.tableorder.domain.MenuItems;
-import dgucomai.tableorder.domain.OrderItems;
-import dgucomai.tableorder.domain.Orders;
-import dgucomai.tableorder.domain.StaffCall;
+import dgucomai.tableorder.domain.entity.*;
 import dgucomai.tableorder.domain.enums.OrderStatus;
-import dgucomai.tableorder.dto.OrderCreateReqDto;
-import dgucomai.tableorder.dto.OrderResDto;
+import dgucomai.tableorder.dto.req.OrderCreateReqDto;
+import dgucomai.tableorder.dto.res.OrderResDto;
 import dgucomai.tableorder.repository.MenuItemRepository;
 import dgucomai.tableorder.repository.OrdersRepository;
 import dgucomai.tableorder.repository.StaffCallRepository;
+import dgucomai.tableorder.repository.table.TableRepository;
+import dgucomai.tableorder.repository.table.TableSessionRepository;
 import dgucomai.tableorder.sse.SseEmitterManager;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +24,7 @@ public class OrderService {
   private final MenuItemRepository menuItemRepository;
   private final StaffCallRepository staffCallRepository;
   private final SseEmitterManager sseEmitterManager;
+  private final TableRepository tableRepository;
 
   @Transactional
   public void callStaff(Long tableId, Long sessionId) {
@@ -44,25 +44,27 @@ public class OrderService {
   public OrderResDto createOrder(OrderCreateReqDto dto) {
     int total = 0;
 
-    // [수정] Orders 생성자 인자 개수에 맞게 가운데에 null(changed_by 없음)을 삽입합니다.
-    Orders order = new Orders(dto.tableId(), null, total);
+    Tables table = tableRepository
+            .findByQrToken(dto.qrToken())
+            .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 QR 토큰입니다."));
+
+    Long tableId = table.getTableId();
+
+    Orders order = new Orders(tableId, null, total);
 
     for (OrderCreateReqDto.OrderItemReqDto itemDto : dto.items()) {
       MenuItems menu =
-          menuItemRepository
-              .findById(itemDto.menuId())
-              .orElseThrow(() -> new IllegalArgumentException("메뉴를 찾을 수 없습니다."));
+              menuItemRepository
+                      .findById(itemDto.menuId())
+                      .orElseThrow(() -> new IllegalArgumentException("메뉴를 찾을 수 없습니다."));
       OrderItems orderItem = new OrderItems(order, menu, itemDto.quantity());
       order.addOrderItem(orderItem);
     }
 
-    // 기본 주문 정보 기입 후 저장
     order.setCompletedAt(LocalDateTime.now());
-
     orderRepository.save(order);
 
-    // 주점 관리자 화면(Staff용 웹)으로 주문 알림 SSE 발송
-    sseEmitterManager.sendEventToStaff("PAYMENT_REQUEST_CREATED", dto.tableId());
+    sseEmitterManager.sendEventToStaff("PAYMENT_REQUEST_CREATED", tableId);
 
     return OrderResDto.from(order);
   }
@@ -80,7 +82,8 @@ public class OrderService {
     }
 
     // [수정] 문자열 "COOKING" 대신 Enum 타입과 처리한 직원 ID를 함께 전달합니다.
-    order.updateStatus(OrderStatus.COOKING, staffId);
+    order.updateStatus(OrderStatus.COOKING);
+
     sseEmitterManager.sendEventToStaff("ORDER_APPROVED", order.getTableId());
   }
 
@@ -96,21 +99,23 @@ public class OrderService {
       throw new IllegalStateException("입금 대기 중인 주문만 반려 가능합니다.");
     }
 
-    // [수정] 문자열 "REJECTED" 대신 Enum 타입과 처리한 직원 ID를 함께 전달합니다.
-    order.updateStatus(OrderStatus.REJECTED, staffId);
+    order.updateStatus(OrderStatus.REJECTED);
     sseEmitterManager.sendEventToStaff("ORDER_REJECTED", order.getTableId());
   }
 
-  // [수정] 6.5 명세서 및 메서드 시그니처 변경에 따라 staffId를 파라미터로 받습니다.
   @Transactional
   public void updateOrderStatus(Long orderId, String status, Long staffId) {
     Orders order =
-        orderRepository
-            .findById(orderId)
-            .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+            orderRepository
+                    .findById(orderId)
+                    .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
-    // [수정] 들어온 외부 문자열 status를 OrderStatus Enum 타입으로 변환하고 staffId를 함께 전달합니다.
-    order.updateStatus(OrderStatus.valueOf(status), staffId);
+    OrderStatus newStatus = OrderStatus.valueOf(status.toUpperCase());
+
+    order.updateStatus(newStatus);
+    order.setCompletedAt(LocalDateTime.now());
+    order.setCheckedByStaffId(staffId);
+
     sseEmitterManager.sendEventToStaff("ORDER_STATUS_CHANGED", order.getTableId());
   }
 
