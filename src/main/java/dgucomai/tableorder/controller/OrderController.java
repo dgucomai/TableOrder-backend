@@ -1,10 +1,10 @@
 package dgucomai.tableorder.controller;
 
-import dgucomai.tableorder.dto.req.OrderCreateReqDto;
-import dgucomai.tableorder.dto.req.StaffCallReqDto;
-import dgucomai.tableorder.dto.res.ApiResDto;
-import dgucomai.tableorder.dto.res.OrderResDto;
+import dgucomai.tableorder.dto.ApiResDto;
+import dgucomai.tableorder.dto.OrderCreateReqDto;
+import dgucomai.tableorder.dto.OrderResDto;
 import dgucomai.tableorder.service.OrderService;
+import java.time.LocalDateTime;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,22 +18,46 @@ public class OrderController {
 
   private final OrderService orderService;
 
+  public record OrderStatusData(
+      Long orderId,
+      String orderStatus,
+      String completedAt,
+      int changedByStaffId,
+      String changedByStaffName) {}
+
   @PatchMapping("/staff/orders/{orderId}/status")
-  public ResponseEntity<ApiResDto<Void>> updateStatus(
+  public ResponseEntity<ApiResDto<OrderStatusData>> updateStatus(
       @PathVariable Long orderId, @RequestBody Map<String, String> request) {
-    orderService.updateOrderStatus(orderId, request.get("status"));
-    return ResponseEntity.ok(new ApiResDto<>(true, null, "ORDER_STATUS_CHANGED"));
+
+    String newStatus = request.get("status");
+
+    // [수정] 아래 하드코딩된 더미 직원 ID(2번)와 발 맞춰서 서비스에 2L을 전달합니다.
+    // 추후 로그인 기능이 붙으면 이 자리에 실제 로그인한 직원 ID를 넣어주시면 됩니다!
+    Long dummyStaffId = 2L;
+    orderService.updateOrderStatus(orderId, newStatus, dummyStaffId);
+
+    var data =
+        new OrderStatusData(
+            orderId,
+            newStatus.toUpperCase(),
+            "COMPLETED".equalsIgnoreCase(newStatus) ? LocalDateTime.now().toString() : null,
+            2,
+            "김직원");
+
+    return ResponseEntity.ok(new ApiResDto<>(true, data, "ORDER_STATUS_CHANGED"));
   }
 
   @PostMapping("/staff-call")
-  public ResponseEntity<ApiResDto<Void>> staffCall(@RequestBody StaffCallReqDto request) {
-    orderService.callStaff(request.qrToken(), request.message());
+  public ResponseEntity<ApiResDto<Void>> staffCall(
+      @RequestParam Long tableId, @RequestParam Long sessionId) {
+    orderService.callStaff(tableId, sessionId);
     return ResponseEntity.ok(new ApiResDto<>(true, null, "STAFF_CALL_CREATED"));
   }
 
   @PostMapping("/dealer-call")
-  public ResponseEntity<ApiResDto<Void>> dealerCall(@RequestBody StaffCallReqDto request) {
-    orderService.callDealer(request.qrToken(), request.message());
+  public ResponseEntity<ApiResDto<Void>> dealerCall(
+      @RequestParam Long tableId, @RequestParam Long sessionId) {
+    orderService.callDealer(tableId, sessionId);
     return ResponseEntity.ok(new ApiResDto<>(true, null, "DEALER_CALL_CREATED"));
   }
 
@@ -47,13 +71,15 @@ public class OrderController {
 
   @PatchMapping("/staff/orders/{orderId}/approve")
   public ResponseEntity<ApiResDto<Void>> approveOrder(@PathVariable Long orderId) {
-    orderService.approveOrder(orderId);
+    // [수정] 서비스가 요구하는 staffId 인자 규칙에 맞게 임시 더미 ID(2L)를 넘겨줍니다.
+    orderService.approveOrder(orderId, 2L);
     return ResponseEntity.ok(new ApiResDto<>(true, null, "ORDER_APPROVED"));
   }
 
   @DeleteMapping("/staff/orders/{orderId}")
   public ResponseEntity<ApiResDto<Void>> rejectOrder(@PathVariable Long orderId) {
-    orderService.rejectOrder(orderId);
+    // [수정] 서비스가 요구하는 staffId 인자 규칙에 맞게 임시 더미 ID(2L)를 넘겨줍니다.
+    orderService.rejectOrder(orderId, 2L);
     return ResponseEntity.ok(new ApiResDto<>(true, null, "ORDER_REJECTED"));
   }
 
