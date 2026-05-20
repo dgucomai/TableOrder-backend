@@ -19,7 +19,7 @@ public class GameUserController {
 
   private final GameUserService gameUserService;
 
-  @PostMapping("/api/game/users")
+  @PostMapping({"/api/game/users", "/api/game/users/"})
   public ResponseEntity<ApiResDto<GameUserCreateResDto>> createUser(
       @RequestBody GameUserCreateReqDto request) {
     GameUserCreateResDto response = gameUserService.createUser(request);
