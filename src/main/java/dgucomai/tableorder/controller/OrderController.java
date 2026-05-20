@@ -4,7 +4,9 @@ import dgucomai.tableorder.dto.req.OrderCreateReqDto;
 import dgucomai.tableorder.dto.req.StaffCallReqDto;
 import dgucomai.tableorder.dto.res.ApiResDto;
 import dgucomai.tableorder.dto.res.OrderResDto;
+import dgucomai.tableorder.dto.res.TableNumResDto;
 import dgucomai.tableorder.service.OrderService;
+import dgucomai.tableorder.service.table.TableService;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,6 +19,13 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
 
   private final OrderService orderService;
+  private final TableService tableService;
+
+  @GetMapping("/qtnum")
+  public ResponseEntity<ApiResDto<TableNumResDto>> getTableNumByQt(@RequestParam String qt) {
+    TableNumResDto response = tableService.getTableNumByQrToken(qt);
+    return ResponseEntity.ok(ApiResDto.success(response));
+  }
 
   @PatchMapping("/staff/orders/{orderId}/status")
   public ResponseEntity<ApiResDto<Void>> updateStatus(

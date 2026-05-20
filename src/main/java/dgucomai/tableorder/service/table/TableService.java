@@ -11,7 +11,10 @@ import dgucomai.tableorder.domain.enums.TableSessionStatus;
 import dgucomai.tableorder.domain.type.TableStatus;
 import dgucomai.tableorder.dto.res.OrderResDto;
 import dgucomai.tableorder.dto.res.TableDetailResDto;
+import dgucomai.tableorder.dto.res.TableNumResDto;
 import dgucomai.tableorder.dto.res.TableSummaryResDto;
+import dgucomai.tableorder.exception.CustomException;
+import dgucomai.tableorder.exception.ErrorCode;
 import dgucomai.tableorder.repository.OrdersRepository;
 import dgucomai.tableorder.repository.StaffCallRepository;
 import dgucomai.tableorder.repository.table.StaffRepository;
@@ -35,6 +38,17 @@ public class TableService {
   private final StaffCallRepository staffCallRepository;
   private final OrdersRepository ordersRepository;
   private final SseEmitterManager sseEmitterManager;
+
+  @Transactional(readOnly = true)
+  public TableNumResDto getTableNumByQrToken(String qrToken) {
+    Tables table =
+        tableRepository
+            .findByQrToken(qrToken)
+            .orElseThrow(
+                () ->
+                    new CustomException(ErrorCode.TABLE_NOT_FOUND, "QR 토큰에 해당하는 테이블을 찾을 수 없습니다."));
+    return TableNumResDto.from(table);
+  }
 
   @Transactional(readOnly = true)
   public List<TableSummaryResDto> getAllTables() {
