@@ -1,6 +1,6 @@
 package dgucomai.tableorder.domain.entity;
 
-import dgucomai.tableorder.domain.type.TableStatus;
+import dgucomai.tableorder.domain.enums.TableSessionStatus;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.*;
@@ -29,7 +29,7 @@ public class TableSession {
 
   @Column(name = "status")
   @Enumerated(EnumType.STRING)
-  private TableStatus status;
+  private TableSessionStatus status;
 
   @Column(name = "token_count")
   private Integer tokenCount;

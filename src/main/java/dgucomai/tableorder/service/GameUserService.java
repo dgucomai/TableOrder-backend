@@ -3,7 +3,6 @@ package dgucomai.tableorder.service;
 import dgucomai.tableorder.domain.entity.GameUsers;
 import dgucomai.tableorder.domain.entity.TableSession;
 import dgucomai.tableorder.domain.entity.Tables;
-import dgucomai.tableorder.domain.type.TableStatus;
 import dgucomai.tableorder.dto.req.GameUserCreateReqDto;
 import dgucomai.tableorder.dto.req.GameUserUpdateReqDto;
 import dgucomai.tableorder.dto.res.GameRankingItemResDto;
@@ -46,9 +45,9 @@ public class GameUserService {
       currentSession = tableSessionRepository.findById(table.getCurrentSessionId()).orElse(null);
     }
 
-    if (currentSession == null || currentSession.getStatus() == TableStatus.EMPTY) {
-      throw new GameApiException(HttpStatus.NOT_FOUND, "현재 활성화된 테이블 세션을 찾을 수 없습니다.");
-    }
+    // if (currentSession == null || currentSession.getStatus() == TableStatus.EMPTY) {
+    // throw new GameApiException(HttpStatus.NOT_FOUND, "현재 활성화된 테이블 세션을 찾을 수 없습니다.");
+    // }
 
     GameUsers gameUsers =
         new GameUsers(currentSession.getSessionId(), request.nickname(), request.phoneNumber());
