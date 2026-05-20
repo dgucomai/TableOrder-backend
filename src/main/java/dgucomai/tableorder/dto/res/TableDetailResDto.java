@@ -22,7 +22,7 @@ public record TableDetailResDto(
       Tables table,
       TableSession session,
       TableStatus calculatedStatus,
-      int totalAmount,
+      int amount,
       List<OrderResDto> orders,
       List<StaffCallResDto> calls) {
     return new TableDetailResDto(
@@ -31,7 +31,7 @@ public record TableDetailResDto(
         session != null ? session.getSessionId() : null,
         calculatedStatus,
         session != null ? session.getStatus() : TableSessionStatus.CLOSED,
-        totalAmount,
+        amount,
         session != null ? session.getTokenCount() : 0,
         session != null ? session.getStartedAt() : null,
         orders,

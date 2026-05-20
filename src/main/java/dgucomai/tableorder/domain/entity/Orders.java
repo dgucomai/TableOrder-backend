@@ -31,8 +31,8 @@ public class Orders {
   @Column(name = "order_status", length = 20)
   private OrderStatus orderStatus;
 
-  @Column(name = "total_amount")
-  private int totalAmount;
+  @Column(name = "amount")
+  private int amount;
 
   @Column(name = "created_at")
   private LocalDateTime createdAt;
@@ -52,11 +52,11 @@ public class Orders {
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<PaymentRequest> paymentRequestList = new ArrayList<>();
 
-  public Orders(Long tableId, Long sessionId, int totalAmount) {
+  public Orders(Long tableId, Long sessionId, int amount) {
     this.tableId = tableId;
     this.sessionId = sessionId;
     this.orderStatus = OrderStatus.PAYMENT_PENDING;
-    this.totalAmount = totalAmount;
+    this.amount = amount;
     this.createdAt = LocalDateTime.now();
   }
 
