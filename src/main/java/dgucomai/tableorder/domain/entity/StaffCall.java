@@ -19,8 +19,16 @@ public class StaffCall {
   @Column(name = "table_id", nullable = false)
   private Long tableId;
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "table_id", insertable = false, updatable = false)
+  private Tables table;
+
   @Column(name = "session_id")
   private Long sessionId;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "session_id", insertable = false, updatable = false)
+  private TableSession tableSession;
 
   @Column(name = "call_type")
   private String callType;
@@ -39,6 +47,10 @@ public class StaffCall {
 
   @Column(name = "resolved_by")
   private Long resolvedBy;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "resolved_by", insertable = false, updatable = false)
+  private Staff resolvedStaff;
 
   public StaffCall(Long tableId, Long sessionId, String callType, String message) {
     this.tableId = tableId;

@@ -21,10 +21,10 @@ public class Orders {
   @Column(name = "order_id")
   private Long orderId;
 
-  @Column(name = "table_id")
+  @Column(name = "table_id", nullable = false)
   private Long tableId;
 
-  @Column(name = "session_id")
+  @Column(name = "session_id", nullable = false)
   private Long sessionId;
 
   @Enumerated(EnumType.STRING)
@@ -48,6 +48,9 @@ public class Orders {
 
   @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<OrderItems> orderItems = new ArrayList<>();
+
+  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<PaymentRequest> paymentRequestList = new ArrayList<>();
 
   public Orders(Long tableId, Long sessionId, int totalAmount) {
     this.tableId = tableId;
