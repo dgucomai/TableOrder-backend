@@ -8,7 +8,7 @@ public record OrderResDto(
     Long orderId,
     Long tableId,
     String orderStatus,
-    int totalAmount,
+    int amount,
     LocalDateTime createdAt,
     List<OrderItemResDto> items) {
 
@@ -32,7 +32,7 @@ public record OrderResDto(
         orders.getOrderId(),
         orders.getTableId(),
         orders.getOrderStatus().name(),
-        orders.getTotalAmount(),
+        orders.getAmount(),
         orders.getCreatedAt(),
         items);
   }

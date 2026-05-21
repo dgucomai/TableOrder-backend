@@ -127,10 +127,10 @@ public class TableService {
       calculatedStatus = TableStatus.PAYMENT_PENDING;
     }
 
-    int totalAmount =
+    int amount =
         dbOrders.stream()
             .filter(o -> o.getOrderStatus() != OrderStatus.REJECTED)
-            .mapToInt(Orders::getTotalAmount)
+            .mapToInt(Orders::getAmount)
             .sum();
 
     List<OrderResDto> orderDtos =
@@ -148,7 +148,7 @@ public class TableService {
                         c.getCreatedAt()))
             .collect(Collectors.toList());
 
-    return TableDetailResDto.of(table, session, calculatedStatus, totalAmount, orderDtos, callDtos);
+    return TableDetailResDto.of(table, session, calculatedStatus, amount, orderDtos, callDtos);
   }
 
   @Transactional
