@@ -6,6 +6,7 @@ import dgucomai.tableorder.dto.res.ApiResDto;
 import dgucomai.tableorder.dto.res.BillingResDto;
 import dgucomai.tableorder.dto.res.OrderResDto;
 import dgucomai.tableorder.dto.res.TableNumResDto;
+import dgucomai.tableorder.logs.service.LogService;
 import dgucomai.tableorder.service.OrderService;
 import dgucomai.tableorder.service.table.TableService;
 import java.util.Map;
@@ -21,6 +22,7 @@ public class OrderController {
 
   private final OrderService orderService;
   private final TableService tableService;
+  private final LogService logService;
 
   @GetMapping("/billing")
   public ResponseEntity<ApiResDto<BillingResDto>> getBilling(@RequestParam String qt) {
@@ -28,7 +30,7 @@ public class OrderController {
       BillingResDto response = orderService.getBilling(qt);
       return ResponseEntity.ok(ApiResDto.success(response));
     } catch (Exception e) {
-      return handleException(e);
+      return handleException("CLIENT", "GET /api/billing", e);
     }
   }
 
@@ -53,7 +55,7 @@ public class OrderController {
       return new ResponseEntity<>(
           new ApiResDto<>(true, response, "PAYMENT_REQUEST_CREATED"), HttpStatus.CREATED);
     } catch (Exception e) {
-      return handleException(e);
+      return handleException("CLIENT", "POST /api/orders", e);
     }
   }
 
@@ -63,7 +65,7 @@ public class OrderController {
       orderService.callStaff(request.qrToken(), request.message());
       return ResponseEntity.ok(new ApiResDto<>(true, null, "STAFF_CALL_CREATED"));
     } catch (Exception e) {
-      return handleException(e);
+      return handleException("CLIENT", "POST /api/staff-call", e);
     }
   }
 
@@ -73,7 +75,7 @@ public class OrderController {
       orderService.callDealer(request.qrToken(), request.message());
       return ResponseEntity.ok(new ApiResDto<>(true, null, "DEALER_CALL_CREATED"));
     } catch (Exception e) {
-      return handleException(e);
+      return handleException("CLIENT", "POST /api/dealer-call", e);
     }
   }
 
@@ -84,18 +86,20 @@ public class OrderController {
       orderService.approveOrder(orderId, staffId);
       return ResponseEntity.ok(new ApiResDto<>(true, null, "ORDER_APPROVED"));
     } catch (Exception e) {
-      return handleException(e);
+      return handleException("STAFF", "PATCH /api/staff/orders/" + orderId + "/approve", e);
     }
   }
 
   @PatchMapping("/staff/orders/{orderId}/status")
   public ResponseEntity<ApiResDto<Void>> updateStatus(
-      @PathVariable Long orderId, @RequestBody Map<String, String> request) {
+      @PathVariable Long orderId,
+      @RequestParam Long staffId,
+      @RequestBody Map<String, String> request) {
     try {
-      orderService.updateOrderStatus(orderId, request.get("status"));
+      orderService.updateOrderStatus(orderId, request.get("status"), staffId);
       return ResponseEntity.ok(new ApiResDto<>(true, null, "ORDER_STATUS_CHANGED"));
     } catch (Exception e) {
-      return handleException(e);
+      return handleException("STAFF", "PATCH /api/staff/orders/" + orderId + "/status", e);
     }
   }
 
@@ -106,7 +110,7 @@ public class OrderController {
       orderService.resolveCall(callId, staffId);
       return ResponseEntity.ok(new ApiResDto<>(true, null, "CALL_RESOLVED"));
     } catch (Exception e) {
-      return handleException(e);
+      return handleException("STAFF", "PATCH /api/staff/calls/" + callId + "/resolve", e);
     }
   }
 
@@ -117,21 +121,21 @@ public class OrderController {
       orderService.rejectOrder(orderId, staffId);
       return ResponseEntity.ok(new ApiResDto<>(true, null, "ORDER_REJECTED"));
     } catch (Exception e) {
-      return handleException(e);
+      return handleException("STAFF", "DELETE /api/staff/orders/" + orderId, e);
     }
   }
 
-  private <T> ResponseEntity<ApiResDto<T>> handleException(Exception e) {
+  private <T> ResponseEntity<ApiResDto<T>> handleException(
+      String actorType, String endpoint, Exception e) {
     String message = e.getMessage() != null ? e.getMessage() : "500 INTERNAL_SERVER_ERROR";
+    logService.saveServiceLog(actorType, endpoint + " 실패: " + message);
 
     if (message.startsWith("404")) {
       return new ResponseEntity<>(new ApiResDto<>(false, null, message), HttpStatus.NOT_FOUND);
     }
-
     if (message.startsWith("400")) {
       return new ResponseEntity<>(new ApiResDto<>(false, null, message), HttpStatus.BAD_REQUEST);
     }
-
     return new ResponseEntity<>(new ApiResDto<>(false, null, message), HttpStatus.BAD_REQUEST);
   }
 }

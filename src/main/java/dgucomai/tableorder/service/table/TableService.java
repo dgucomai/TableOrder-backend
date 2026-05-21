@@ -15,6 +15,7 @@ import dgucomai.tableorder.dto.res.TableNumResDto;
 import dgucomai.tableorder.dto.res.TableSummaryResDto;
 import dgucomai.tableorder.exception.CustomException;
 import dgucomai.tableorder.exception.ErrorCode;
+import dgucomai.tableorder.logs.service.LogService;
 import dgucomai.tableorder.repository.OrdersRepository;
 import dgucomai.tableorder.repository.StaffCallRepository;
 import dgucomai.tableorder.repository.table.StaffRepository;
@@ -39,6 +40,7 @@ public class TableService {
   private final StaffCallRepository staffCallRepository;
   private final OrdersRepository ordersRepository;
   private final SseEmitterManager sseEmitterManager;
+  private final LogService logService;
   private final EntityManager em;
 
   @Transactional(readOnly = true)
@@ -192,6 +194,17 @@ public class TableService {
     tableRepository.save(table);
 
     sseEmitterManager.sendEventToStaff("TABLE_STATUS_CHANGED", tableId);
+
+    logService.saveServiceLog(
+        "STAFF",
+        "staffId "
+            + staffId
+            + "번 "
+            + staff.getStaffName()
+            + "이 "
+            + table.getTableNumber()
+            + "번 테이블을 정리했습니다.");
+
     return TableDetailResDto.empty(table, savedNewSession.getSessionId());
   }
 

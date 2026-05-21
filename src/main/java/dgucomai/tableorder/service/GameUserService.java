@@ -12,6 +12,7 @@ import dgucomai.tableorder.dto.res.GameUserCreateResDto;
 import dgucomai.tableorder.dto.res.GameUserResDto;
 import dgucomai.tableorder.dto.res.GameUserUpdateResDto;
 import dgucomai.tableorder.exception.GameApiException;
+import dgucomai.tableorder.logs.service.LogService;
 import dgucomai.tableorder.repository.GameUserRepository;
 import dgucomai.tableorder.repository.table.TableRepository;
 import dgucomai.tableorder.repository.table.TableSessionRepository;
@@ -30,6 +31,7 @@ public class GameUserService {
   private final GameUserRepository gameUserRepository;
   private final TableRepository tableRepository;
   private final TableSessionRepository tableSessionRepository;
+  private final LogService logService;
 
   @Transactional
   public GameUserCreateResDto createUser(GameUserCreateReqDto request) {
@@ -55,6 +57,16 @@ public class GameUserService {
 
     GameUsers savedUser = gameUserRepository.save(gameUsers);
 
+    String phoneLast4 = getPhoneLast4(savedUser.getPhoneNumber());
+    logService.saveServiceLog(
+        "GAME",
+        table.getTableNumber()
+            + "번 테이블에서 게임 사용자 "
+            + savedUser.getNickname()
+            + "("
+            + phoneLast4
+            + ")이 등록되었습니다.");
+
     return GameUserCreateResDto.from(savedUser, table);
   }
 
@@ -74,6 +86,17 @@ public class GameUserService {
         request.rockPaperScissorsScore(),
         request.akoGrowingScore(),
         request.basketballScore());
+
+    String phoneLast4 = getPhoneLast4(gameUsers.getPhoneNumber());
+    logService.saveServiceLog(
+        "GAME",
+        "게임 사용자 "
+            + gameUsers.getNickname()
+            + "("
+            + phoneLast4
+            + ")(userId "
+            + userId
+            + "번) 정보가 수정되었습니다.");
 
     return GameUserUpdateResDto.from(gameUsers);
   }
@@ -172,6 +195,11 @@ public class GameUserService {
     if (!phoneNumber.matches("^[0-9]+$")) {
       throw new GameApiException(HttpStatus.BAD_REQUEST, "전화번호 형식이 올바르지 않습니다.");
     }
+  }
+
+  private String getPhoneLast4(String phoneNumber) {
+    if (phoneNumber == null || phoneNumber.length() <= 4) return phoneNumber;
+    return phoneNumber.substring(phoneNumber.length() - 4);
   }
 
   private void validateGameIndex(Integer game) {

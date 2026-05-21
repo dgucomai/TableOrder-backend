@@ -6,9 +6,12 @@ import dgucomai.tableorder.domain.enums.TableSessionStatus;
 import dgucomai.tableorder.dto.req.OrderCreateReqDto;
 import dgucomai.tableorder.dto.res.BillingResDto;
 import dgucomai.tableorder.dto.res.OrderResDto;
+import dgucomai.tableorder.logs.service.LogService;
 import dgucomai.tableorder.repository.MenuItemRepository;
 import dgucomai.tableorder.repository.OrdersRepository;
 import dgucomai.tableorder.repository.StaffCallRepository;
+import dgucomai.tableorder.repository.table.StaffRepository;
+import dgucomai.tableorder.repository.table.TableRepository;
 import dgucomai.tableorder.sse.SseEmitterManager;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
@@ -26,6 +29,9 @@ public class OrderService {
   private final StaffCallRepository staffCallRepository;
   private final SseEmitterManager sseEmitterManager;
   private final EntityManager em;
+  private final TableRepository tableRepository;
+  private final StaffRepository staffRepository;
+  private final LogService logService;
 
   private Object[] getValidTableInfo(String qrToken) {
     try {
@@ -54,6 +60,14 @@ public class OrderService {
     PaymentRequest paymentRequest =
         new PaymentRequest(order.getOrderId(), order.getSessionId(), order.getAmount());
     em.persist(paymentRequest);
+  }
+
+  private Integer getTableNumber(Long tableId) {
+    return tableRepository.findById(tableId).map(Tables::getTableNumber).orElse(null);
+  }
+
+  private String getStaffName(Long staffId) {
+    return staffRepository.findById(staffId).map(Staff::getStaffName).orElse("알 수 없음");
   }
 
   public BillingResDto getBilling(String qrToken) {
@@ -100,15 +114,17 @@ public class OrderService {
       }
 
       order.addOrderItem(new OrderItems(order, menu, itemDto.quantity()));
-
       calculatedAmount += menu.getPrice() * itemDto.quantity();
     }
 
     order.setAmount(calculatedAmount);
-
     orderRepository.save(order);
     createPaymentRequest(order);
     sseEmitterManager.sendEventToStaff("PAYMENT_REQUEST_CREATED", tableId);
+
+    logService.saveServiceLog(
+        "CLIENT",
+        getTableNumber(tableId) + "번 테이블에서 orderId " + order.getOrderId() + "번 주문 대기를 등록했습니다.");
 
     return OrderResDto.from(order);
   }
@@ -128,6 +144,9 @@ public class OrderService {
     StaffCall call = new StaffCall(tableId, sessionId, "STAFF", message);
     staffCallRepository.save(call);
     sseEmitterManager.sendEventToStaff("STAFF_CALL_CREATED", tableId);
+
+    logService.saveServiceLog(
+        "CLIENT", getTableNumber(tableId) + "번 테이블에서 직원 호출을 요청했습니다. (메시지: " + message + ")");
   }
 
   @Transactional
@@ -145,6 +164,8 @@ public class OrderService {
     StaffCall call = new StaffCall(tableId, sessionId, "DEALER", message);
     staffCallRepository.save(call);
     sseEmitterManager.sendEventToStaff("DEALER_CALL_CREATED", tableId);
+
+    logService.saveServiceLog("CLIENT", getTableNumber(tableId) + "번 테이블에서 딜러 호출을 요청했습니다.");
   }
 
   @Transactional
@@ -172,17 +193,16 @@ public class OrderService {
     }
 
     sseEmitterManager.sendEventToStaff("ORDER_APPROVED", order.getTableId());
-  }
 
-  @Transactional
-  public void updateOrderStatus(Long orderId, String status) {
-    Orders order =
-        orderRepository
-            .findById(orderId)
-            .orElseThrow(() -> new IllegalArgumentException("404 ORDER_NOT_FOUND"));
-
-    order.updateStatus(OrderStatus.valueOf(status.toUpperCase()));
-    sseEmitterManager.sendEventToStaff("ORDER_STATUS_CHANGED", order.getTableId());
+    logService.saveServiceLog(
+        "STAFF",
+        "staffId "
+            + staffId
+            + "번 "
+            + getStaffName(staffId)
+            + "이 orderId "
+            + orderId
+            + "번 주문을 승인했습니다.");
   }
 
   @Transactional
@@ -210,6 +230,39 @@ public class OrderService {
     }
 
     sseEmitterManager.sendEventToStaff("ORDER_REJECTED", order.getTableId());
+
+    logService.saveServiceLog(
+        "STAFF",
+        "staffId "
+            + staffId
+            + "번 "
+            + getStaffName(staffId)
+            + "이 orderId "
+            + orderId
+            + "번 주문을 반려했습니다.");
+  }
+
+  @Transactional
+  public void updateOrderStatus(Long orderId, String status, Long staffId) {
+    Orders order =
+        orderRepository
+            .findById(orderId)
+            .orElseThrow(() -> new IllegalArgumentException("404 ORDER_NOT_FOUND"));
+
+    order.updateStatus(OrderStatus.valueOf(status.toUpperCase()));
+    sseEmitterManager.sendEventToStaff("ORDER_STATUS_CHANGED", order.getTableId());
+
+    logService.saveServiceLog(
+        "STAFF",
+        "staffId "
+            + staffId
+            + "번 "
+            + getStaffName(staffId)
+            + "이 orderId "
+            + orderId
+            + "번 주문을 "
+            + status
+            + "로 변경했습니다.");
   }
 
   @Transactional
@@ -221,5 +274,15 @@ public class OrderService {
 
     staffCall.resolve(staffId);
     sseEmitterManager.sendEventToStaff("CALL_RESOLVED", staffCall.getTableId());
+
+    logService.saveServiceLog(
+        "STAFF",
+        "staffId "
+            + staffId
+            + "번 "
+            + getStaffName(staffId)
+            + "이 callId "
+            + callId
+            + "번 호출을 처리 완료했습니다.");
   }
 }

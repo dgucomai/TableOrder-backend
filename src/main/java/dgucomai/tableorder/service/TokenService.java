@@ -6,6 +6,7 @@ import dgucomai.tableorder.dto.res.TokenResDto;
 import dgucomai.tableorder.dto.res.TokenUpdateResDto;
 import dgucomai.tableorder.exception.CustomException;
 import dgucomai.tableorder.exception.ErrorCode;
+import dgucomai.tableorder.logs.service.LogService;
 import dgucomai.tableorder.repository.table.TableRepository;
 import dgucomai.tableorder.repository.table.TableSessionRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ public class TokenService {
 
   private final TableRepository tableRepository;
   private final TableSessionRepository tableSessionRepository;
+  private final LogService logService;
 
   public TokenResDto getTokenCount(Long tableId) {
     Tables table =
@@ -71,6 +73,15 @@ public class TokenService {
     }
 
     session.setTokenCount(currentTokenCount);
+
+    logService.saveServiceLog(
+        "GAME",
+        table.getTableNumber()
+            + "번 테이블 토큰이 "
+            + delta
+            + "만큼 변경되었습니다. (현재 "
+            + currentTokenCount
+            + "개)");
 
     return new TokenUpdateResDto(
         table.getTableId(), table.getTableNumber(), previousTokenCount, delta, currentTokenCount);
